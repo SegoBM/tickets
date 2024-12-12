@@ -13,7 +13,6 @@ import 'package:tickets/shared/widgets/Snackbars/customSnackBar.dart';
 import 'package:tickets/shared/widgets/appBar/my_appBar.dart';
 import 'package:tickets/shared/widgets/buttons/dropdown_decoration.dart';
 import 'package:fading_edge_scrollview/fading_edge_scrollview.dart';
-import 'package:tickets/shared/widgets/dialogs/custom_awesome_dialog.dart';
 import 'package:tickets/shared/widgets/textfields/my_textfield_icon.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:vibration/vibration.dart';

@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:tickets/pages/Settings/Users/user_registration_screen.dart';
 import 'package:tickets/config/behavior/myScrollBehavior.dart';
 import 'package:tickets/config/theme/app_theme.dart';
 import 'package:tickets/pages/Tickets/tickets_home.dart';
-import 'package:tickets/pages/TicketsTest/tickets_home.dart';
 import 'package:tickets/pages/login/app_login_view.dart';
 import 'package:tickets/pages/splash_screen.dart';
 import 'package:flutter/services.dart';
 import 'package:tickets/services/push_notifications_service.dart';
-import 'pages/Home/home_screen.dart';
 import 'package:window_manager/window_manager.dart';
 import 'dart:io';
 
@@ -19,6 +16,7 @@ void main() async {
   }
   runApp(const MyApp());
 }
+
 class MyApp extends StatefulWidget {
   static void updateTheme(ThemeMode themeMode) {
     _MyAppState? state = _MyAppState.instance;
@@ -37,6 +35,7 @@ class _MyAppState extends State<MyApp> {
   bool isLogged = false;
   ThemeMode _themeMode = ThemeMode.light;
   ThemeData _themeData = GlobalThemData.lightThemeData;
+
   @override
   void initState() {
     super.initState();
@@ -49,26 +48,19 @@ class _MyAppState extends State<MyApp> {
         isLogged = true;
       });
     });
-    /*
-    PushNotificationService.messageStream.listen((message) {
-      print("a\na\na\na\na\na\na\na\na\na\na");
-      print('MyApp: $message');
-      print("a\na\na\na\na\na\na\na\na\na\na");
-    });*/
   }
+
   @override
   void dispose() {
     instance = null;
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-
       debugShowCheckedModeBanner: false,
-      // home: isLogged ? const SplashScreen2() : const SplashScreen(),//navegacion manual para la pantalla de inicio
-      //theme: AppTheme().getTheme(),
-      themeMode: _themeMode, //or ThemeMode.dark
+      themeMode: _themeMode,
       theme: _themeData,
       darkTheme: GlobalThemData.darkThemeData,
       scrollBehavior: MyCustomScrollBehavior(),
@@ -76,26 +68,18 @@ class _MyAppState extends State<MyApp> {
       routes: {
         SplashScreen2.id: (_) => const SplashScreen2(),
         LoginPage.id: (_) => const LoginPage(),
-        HomeScreen.id: (_) => const HomeScreen(),
         TicketHomeScreen.id: (_) => const TicketHomeScreen(),
-        TicketHomeScreenTest.id: (_) => const TicketHomeScreenTest(),
-
-        UserRegistrationScreen.id: (_) => UserRegistrationScreen(listSubmoduloPermisos: [],areas: [], listEmpresas: [],
-        listAjustesUsuarios: [],),
-
-        // ListaMaterialesScreen.id: (_) => const ListaMaterialesScreen(),
       },
     );
   }
+
   void updateTheme(ThemeMode themeMode) {
     setState(() {
       _themeMode = themeMode;
     });
     if (_themeMode == ThemeMode.light) {
-      // Tema claro
       _themeData = GlobalThemData.lightThemeData;
     } else {
-      // Tema oscuro
       _themeData = GlobalThemData.darkThemeData;
     }
   }

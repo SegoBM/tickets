@@ -4,7 +4,6 @@ import 'package:tickets/controllers/TicketController/SatisfactionController.dart
 import 'package:tickets/pages/Tickets/CustomeAwesomeDialogTickets.dart';
 import 'package:tickets/pages/Tickets/loadingDialogTickets.dart';
 import 'package:tickets/shared/utils/color_palette.dart';
-import 'package:tickets/shared/widgets/Snackbars/cherryToast.dart';
 import 'package:rive/rive.dart';
 import '../../models/TicketsModels/satisfaction.dart';
 import '../../shared/utils/texts.dart';

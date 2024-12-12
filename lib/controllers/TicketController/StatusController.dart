@@ -1,7 +1,6 @@
 import 'package:tickets/shared/utils/constants.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
-import '../../models/ConfigModels/userSession.dart';
 import '../../models/TicketsModels/status.dart';
 
 const urlapi= url;

@@ -6,8 +6,6 @@ import '../../models/TicketsModels/Comentario.dart';
 import '../../shared/utils/color_palette.dart';
 import '../../shared/utils/texts.dart';
 import '../../shared/utils/user_preferences.dart';
-import '../../shared/widgets/Loading/loadingDialog.dart';
-import '../../shared/widgets/dialogs/custom_awesome_dialog.dart';
 
 class ticket_noResolved extends StatefulWidget {
   String id;
