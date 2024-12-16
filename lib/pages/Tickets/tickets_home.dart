@@ -19,6 +19,7 @@ import 'package:tickets/shared/widgets/dialogs/custom_awesome_dialog.dart';
 import '../../controllers/ConfigControllers/usuarioPermisoController.dart';
 import '../../models/ConfigModels/empresa.dart';
 import '../../models/ConfigModels/usuarioPermiso.dart';
+import 'CustomeAwesomeDialogTickets.dart';
 import 'Tickets_recibidos_Admin.dart';
 import 'tickets_home_screen.dart';
 
@@ -132,10 +133,14 @@ class _TicketHomeScreen extends State<TicketHomeScreen> {
           children: <Widget>[
             const SizedBox(height: 30,),
             ListTile(leading: const Icon(IconLibrary.iconBack, color: Colors.black,),
-              title: const Text('Salir de tickets', style: TextStyle(color: Colors.black),),
+              title: const Text('Cerrar sesión', style: TextStyle(color: Colors.black),),
               onTap: () async {
-                await UserPreferences().borrarUsuario();
-                Navigator.of(context).pushNamedAndRemoveUntil('loginPage', (Route<dynamic> route) => false);
+                CustomAwesomeDialogTickets(title: "Quieres cerrar la sesión actual", desc: '', btnOkOnPress: () async {
+                  await UserPreferences().borrarUsuario();
+                  Navigator.of(context).pushNamedAndRemoveUntil('loginPage', (Route<dynamic> route) => false);},
+                    btnCancelOnPress: () {Navigator.of(context).pop();},
+                    width: size.width<500? size.width*.9:null).showQuestion(context);
+
 
 
               },
