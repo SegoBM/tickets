@@ -87,11 +87,12 @@ class _LoginPage extends State<LoginPage> with TickerProviderStateMixin {
       if (constraints.maxWidth > 600) {
         return _desktopBody(size, context);
       } else {
-        return _desktopBody(size, context);
-
+        return _mobileBody(size, context);
       }
     });
   }
+
+
 
   Widget _desktopBody(Size size, BuildContext context) {
     double height = MediaQuery.of(context).size.height;
@@ -337,6 +338,206 @@ class _LoginPage extends State<LoginPage> with TickerProviderStateMixin {
     );
   }
 
+  Widget _mobileBody(Size size, BuildContext context) {
+    double height = size.height;
+    double width = size.width;
+    return Scaffold(
+      backgroundColor: ColorPalette.backColor,
+      body: SingleChildScrollView(
+        child: Container(
+          height: height, width: width,
+          margin: const EdgeInsets.symmetric(horizontal: 15),
+          color: ColorPalette.backColor,
+
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: height * 0.145,
+              ),
+              Center(
+                child: Text(
+                  'Bienvenido a Tickets',
+                  style: Theme.of(context).textTheme.headline6?.copyWith(
+                    color: ColorPalette.blueDarkColor,
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                  ),
+
+                ),
+              ),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  height: 250,
+                  child: rv.RiveAnimation.asset(
+                    'assets/Robo.riv',
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: height * 0.03,
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'Usuario',
+                  style: Theme.of(context).textTheme.headline6?.copyWith(
+                    color: ColorPalette.blueDarkColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+
+              Container(
+                height: 50.0,
+                width: width,
+                decoration: BoxDecoration(
+                  color: ColorPalette.whiteColor,
+                  borderRadius: BorderRadius.circular(16.0),
+                  border: Border.all(
+                    color: ColorPalette.blueDarkColor,
+                    width: 0.5,
+                  ),
+                ),
+                child: TextFormField(
+                  key: const Key('usuario'),
+                  controller: usuarioController,
+                  style: Theme.of(context).textTheme.headline6?.copyWith(
+                    color: ColorPalette.blueDarkColor,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Icon(
+                        Icons.person,
+                        color: ColorPalette.blueDarkColor,
+                      ),
+                    ),
+                    contentPadding: const EdgeInsets.only(top: 15),
+                    hintText: 'Usuario',
+                    hintStyle: Theme.of(context).textTheme.headline6?.copyWith(
+                      color: ColorPalette.blueDarkColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 20.0,
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'Contraseña',
+                  style: Theme.of(context).textTheme.headline6?.copyWith(
+                    color: ColorPalette.blueDarkColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+
+              Container(
+                height: 50.0,
+                width: width,
+                decoration: BoxDecoration(
+                  color: ColorPalette.whiteColor,
+                  borderRadius: BorderRadius.circular(16.0),
+                  border: Border.all(
+                    color: ColorPalette.blueDarkColor,
+                    width: 0.5,
+                  ),
+                ),
+                child: TextFormField(
+                  key: const Key('password'),
+                  controller: passwordController,
+                  style: Theme.of(context).textTheme.headline6?.copyWith(
+                    color: ColorPalette.blueDarkColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  obscureText: _isObscure,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isObscure ? Icons.visibility : Icons.visibility_off,
+                        color: ColorPalette.blueDarkColor,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isObscure = !_isObscure;
+                        });
+                      },
+                    ),
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Icon(
+                        Icons.lock,
+                        color: ColorPalette.blueDarkColor,
+                      ),
+                    ),
+                    contentPadding: const EdgeInsets.only(top: 19),
+                    hintText: 'Contraseña',
+                    hintStyle: Theme.of(context).textTheme.headline6?.copyWith(
+                      color: ColorPalette.blueDarkColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: height * 0.05,
+              ),
+              Center(
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () async {
+                      addUser();
+                      print(usuarioController.text);
+                      print(passwordController.text);
+                      bool? process = await login2(width);
+                      if (process == true) {
+                        onSuccess();
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(16.0),
+                    child: Ink(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 14.0,
+                        horizontal: 28.0,
+                      ),
+                      decoration: BoxDecoration(
+                        color: ColorPalette.blueDarkColor,
+                        borderRadius: BorderRadius.circular(16.0),
+                      ),
+                      child: Text(
+                        'Iniciar Sesión',
+                        style: Theme.of(context).textTheme.headline6?.copyWith(
+                          color: ColorPalette.whiteColor,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget addUser() {
     return MyTextField(

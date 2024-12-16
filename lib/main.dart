@@ -5,16 +5,17 @@ import 'package:tickets/pages/Tickets/tickets_home.dart';
 import 'package:tickets/pages/login/app_login_view.dart';
 import 'package:tickets/pages/splash_screen.dart';
 import 'package:flutter/services.dart';
-import 'package:tickets/services/push_notifications_service.dart';
 import 'package:window_manager/window_manager.dart';
 import 'dart:io';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  if(!Platform.isWindows){
-    await PushNotificationService.initializeApp();
-  }
-  runApp(const MyApp());
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]).then((_) {
+    runApp(MyApp());
+  });
 }
 
 class MyApp extends StatefulWidget {

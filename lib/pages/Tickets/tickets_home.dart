@@ -133,9 +133,11 @@ class _TicketHomeScreen extends State<TicketHomeScreen> {
             const SizedBox(height: 30,),
             ListTile(leading: const Icon(IconLibrary.iconBack, color: Colors.black,),
               title: const Text('Salir de tickets', style: TextStyle(color: Colors.black),),
-              onTap: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
+              onTap: () async {
+                await UserPreferences().borrarUsuario();
+                Navigator.of(context).pushNamedAndRemoveUntil('loginPage', (Route<dynamic> route) => false);
+
+
               },
             ),
             const Divider(),

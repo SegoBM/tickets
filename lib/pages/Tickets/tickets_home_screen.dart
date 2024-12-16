@@ -154,8 +154,8 @@ class _TicketsHomeDashboardScreenState extends State<TicketsHomeDashboardScreen>
       child: Padding(padding: const EdgeInsets.symmetric(horizontal: 5),
         child: Column(children: [
           _scrollInfo(),
-          const SizedBox(height: 5,),
-          SizedBox(width: size.width-15, height: 380,
+          const SizedBox(height: 6,),
+          SizedBox(width: size.width-15, height: 382,
               child:_graficoConRelieve(_graficoStackedLine(size.width-15, height: 345))),
           const SizedBox(height: 10,),
           _graficoConRelieve(_graficoBarras(370)),
@@ -220,12 +220,12 @@ class _TicketsHomeDashboardScreenState extends State<TicketsHomeDashboardScreen>
   Widget _graficoStackedLine(double width, {double height = 399}){
     return Transform.scale(scale: 0.9,
       child: Column(children: [
-        const Text("Tickets", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,color: Colors.white),),
+        const Text("Tickets", style: TextStyle(fontSize:20, fontWeight: FontWeight.bold,color: Colors.white),),
         SizedBox(width: width, height: height, child:
         SfCartesianChart(
             primaryXAxis: DateTimeAxis(
               dateFormat: DateFormat.yMMM(), // Formato de fecha
-              title: AxisTitle(text: 'Mes', textStyle: const TextStyle(color: Colors.white)), // Título del eje X
+              title: AxisTitle(text: 'Mes', textStyle: const TextStyle(color: Colors.white),), // Título del eje X
               labelStyle: const TextStyle(color: Colors.white), // Color de las etiquetas del eje X
             ),
             primaryYAxis: NumericAxis(
@@ -278,12 +278,13 @@ class _TicketsHomeDashboardScreenState extends State<TicketsHomeDashboardScreen>
               )
             ]
         ))
+
       ],),
     );
   }
   Widget containerInfo(String image, Color colorContainer, Color colorText, String title, String text){
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Container(width: 170, height: 120,
         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
         decoration: BoxDecoration(color: colorContainer,
@@ -295,7 +296,7 @@ class _TicketsHomeDashboardScreenState extends State<TicketsHomeDashboardScreen>
             children: [
               Image.asset('assets/$image.png', width: 40, height: 40,), // Reemplaza esto con la ruta de tu imagen
               Text(title, style: TextStyle(fontSize: 12, color: colorText),),
-              Text(text, style: TextStyle(fontSize: 21, color: colorText, fontWeight: FontWeight.bold),),
+              Text(text, style: TextStyle(fontSize: 20, color: colorText, fontWeight: FontWeight.bold),),
             ],
           ),
         ),
