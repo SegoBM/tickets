@@ -3,6 +3,7 @@ import 'dart:math' as math show pi;
 import 'package:flutter/material.dart';
 import 'package:tickets/config/theme/app_theme.dart';
 import 'package:tickets/main.dart';
+import 'package:tickets/shared/utils/color_palette.dart';
 import 'package:tickets/shared/utils/icon_library.dart';
 import 'package:tickets/shared/widgets/bar/Tickets/sidebar_item_widget.dart';
 import 'package:tickets/shared/widgets/bar/Tickets/sidebarcontainer.dart';
@@ -11,6 +12,13 @@ import 'package:tickets/shared/widgets/bar/sidebar_group_item.dart';
 import 'package:tickets/shared/widgets/bar/sidebar_item.dart';
 import 'package:tickets/shared/widgets/bar/sidebar_item_widget.dart';
 import 'package:tickets/shared/widgets/bar/sidebarcontainer.dart';
+
+import '../../../../controllers/ConfigControllers/areaController.dart';
+import '../../../../models/ConfigModels/area.dart';
+import '../../../../pages/Tickets/loadingDialogTickets.dart';
+import '../../../../pages/Tickets/ticket_registration_screen.dart';
+import '../../../actions/my_show_dialog.dart';
+import '../../../utils/texts.dart';
 
 
 class SideBarTickets extends StatefulWidget {
@@ -232,11 +240,13 @@ class _CollapsibleSidebarState extends State<SideBarTickets>
               ),
             ),
             SizedBox(height: widget.bottomPadding,),
-            widget.showToggleButton
-                ? Divider(color: widget.unselectedIconColor, indent: 5, endIndent: 5, thickness: 1,)
-                : const SizedBox(height: 5,),
-            widget.showToggleButton ? _toggleButton : SizedBox(height: widget.iconSize,
-            ),
+             Divider(color: widget.unselectedIconColor, indent: 5, endIndent: 5, thickness: 1,),
+           _addButton,
+        widget.showToggleButton
+            ? Divider(color: widget.unselectedIconColor, indent: 5, endIndent: 5, thickness: 1,)
+            : const SizedBox(height: 5,),
+        widget.showToggleButton ? _toggleButton : SizedBox(height: widget.iconSize,
+        ),
           ],
         ),
       ),
@@ -384,6 +394,64 @@ class _CollapsibleSidebarState extends State<SideBarTickets>
       },
     );
   }
+
+  Widget get _addButton {
+    return Platform.isWindows ? Container(
+      decoration: BoxDecoration(
+        color: ColorPalette.ticketsColor, // Color distintivo para el botón
+        borderRadius: BorderRadius.circular(8.0), // Bordes redondeados
+      ),
+      child: SidebarItemWidget(
+        onHoverPointer: widget.onHoverPointer,
+        padding: 8.0, // Ajustar el padding a un valor double
+        offsetX: widget.customItemOffsetX >= 0 ? widget.customItemOffsetX : _offsetX,
+        scale: _fraction,
+        leading: Icon(Icons.add, size: widget.iconSize, color: Colors.white), // Icono blanco
+        title: 'Agregar Ticket',
+        textStyle: _textStyle(Colors.white, widget.toggleTitleStyle?.copyWith(fontSize: 15.0)), // Texto blanco con tamaño de fuente más pequeño
+        isCollapsed: _isCollapsed,
+        minWidth: widget.minWidth,
+        onTap: () {
+          addTicket();
+        },
+      ),
+    ) : SidebarItemWidget(
+      onHoverPointer: widget.onHoverPointer,
+      padding: 8.0, // Ajustar el padding a un valor double
+      offsetX: widget.customItemOffsetX >= 0 ? widget.customItemOffsetX : _offsetX,
+      scale: _fraction,
+      leading: Transform.rotate(angle: _currAngle,
+        child: Icon(widget.toggleButtonIcon, size: widget.iconSize, color: widget.unselectedIconColor),
+      ),
+      title: widget.toggleTitle,
+      textStyle: _textStyle(widget.unselectedTextColor, widget.toggleTitleStyle?.copyWith(fontSize: 12.0)), // Texto con tamaño de fuente más pequeño
+      isCollapsed: _isCollapsed,
+      minWidth: widget.minWidth,
+      onTap: () {
+        _isCollapsed = !_isCollapsed;
+        var endWidth = _isCollapsed ? widget.minWidth : tempWidth;
+        _animateTo(endWidth);
+      },
+    );
+  }
+  Future<void> addTicket() async {
+    final size = MediaQuery.of(context).size; // Define the size variable
+
+    LoadingDialogTickets.showLoadingDialogTickets(context, Texts.loadingData);
+    AreaController areaController = AreaController();
+    List<AreaModels> listArea = await areaController.getAreasConUsuario();
+    LoadingDialogTickets.hideLoadingDialogTickets(context);
+    if (size.width < 500) {
+      await Navigator.of(context).push(MaterialPageRoute(builder: (context) => ticketRegistrationScreen(areas: listArea)));
+    } else {
+      await myShowDialogScale(ticketRegistrationScreen(areas: listArea), context, width: 1140, background: ColorPalette.ticketsColor4);
+    }
+    LoadingDialogTickets.showLoadingDialogTickets(context, Texts.loadingData);
+    Future.delayed(const Duration(milliseconds: 400), () {
+      LoadingDialogTickets.hideLoadingDialogTickets(context);
+    });
+  }
+
 
   double get _fraction => (_currWidth - widget.minWidth) / _delta;
   double get _currAngle => -math.pi * _fraction;

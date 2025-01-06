@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tickets/models/ConfigModels/usuario.dart';
 import 'package:tickets/pages/Tickets/loadingDialogTickets.dart';
+import 'package:tickets/pages/Tickets/ticket_registration_screen.dart';
 import 'package:tickets/pages/Tickets/tickets_levantados.dart';
 import 'package:tickets/pages/Tickets/tickets_recibidos.dart';
 import 'package:tickets/shared/actions/handleException.dart';
@@ -16,9 +17,12 @@ import 'package:tickets/shared/widgets/bar/Tickets/sidebarTickets.dart';
 import 'package:tickets/shared/widgets/bar/sidebar_group_item.dart';
 import 'package:tickets/shared/widgets/bar/sidebar_item.dart';
 import 'package:tickets/shared/widgets/dialogs/custom_awesome_dialog.dart';
+import '../../controllers/ConfigControllers/areaController.dart';
 import '../../controllers/ConfigControllers/usuarioPermisoController.dart';
+import '../../models/ConfigModels/area.dart';
 import '../../models/ConfigModels/empresa.dart';
 import '../../models/ConfigModels/usuarioPermiso.dart';
+import '../../shared/actions/my_show_dialog.dart';
 import 'CustomeAwesomeDialogTickets.dart';
 import 'Tickets_recibidos_Admin.dart';
 import 'tickets_home_screen.dart';
@@ -65,7 +69,7 @@ class _TicketHomeScreen extends State<TicketHomeScreen> {
         },
       ),
       SidebarItem(
-        text: 'Levantados',
+        text: 'Tickets',
         icon: IconLibrary.iconStar,
         isSelected: false,
         onPressed: () {
@@ -132,10 +136,10 @@ class _TicketHomeScreen extends State<TicketHomeScreen> {
         child: ListView(padding: EdgeInsets.zero,
           children: <Widget>[
             const SizedBox(height: 30,),
-            ListTile(leading: const Icon(IconLibrary.iconBack, color: Colors.black,),
+            ListTile(leading: const Icon(IconLibrary.iconHome, color: Colors.black,),
               title: const Text('Cerrar sesión', style: TextStyle(color: Colors.black),),
               onTap: () async {
-                CustomAwesomeDialogTickets(title: "Quieres cerrar la sesión actual", desc: '', btnOkOnPress: () async {
+                CustomAwesomeDialogTickets(title: "¿Quieres cerrar la sesión actual?", desc: '', btnOkOnPress: () async {
                   await UserPreferences().borrarUsuario();
                   Navigator.of(context).pushNamedAndRemoveUntil('loginPage', (Route<dynamic> route) => false);},
                     btnCancelOnPress: () {Navigator.of(context).pop();},
@@ -166,7 +170,7 @@ class _TicketHomeScreen extends State<TicketHomeScreen> {
               },
             ),
             ListTile(leading: const Icon(IconLibrary.iconStar, color: Colors.black,),
-              title: const Text('Levantados', style: TextStyle(color: Colors.black),),
+              title: const Text('Tickets', style: TextStyle(color: Colors.black),),
               onTap: () {
                 setState(() => _headline = 'Levantados');
                 //_selectedIndex = 0;
@@ -191,6 +195,7 @@ class _TicketHomeScreen extends State<TicketHomeScreen> {
       ),
     );
   }
+
 
   Widget body() {
     return SizedBox(width: 1000,
@@ -287,5 +292,61 @@ class _TicketHomeScreen extends State<TicketHomeScreen> {
           btnCancelOnPress: (){}).showError(context);
       print('Error al obtener los permisos: $e');
     }
+  }
+
+
+
+
+}
+
+class SidebarButton extends StatelessWidget {
+  final String text;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onPressed;
+  final VoidCallback onHold;
+
+  const SidebarButton({
+    required this.text,
+    required this.icon,
+    required this.isSelected,
+    required this.onPressed,
+    required this.onHold,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onPressed,
+      onLongPress: onHold,
+      child: Container(
+        margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+        padding: EdgeInsets.all(12.0),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.blue : Colors.grey[200],
+          borderRadius: BorderRadius.circular(8.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              offset: Offset(0, 2),
+              blurRadius: 4.0,
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: isSelected ? Colors.white : Colors.black),
+            SizedBox(width: 8.0),
+            Text(
+              text,
+              style: TextStyle(
+                color: isSelected ? Colors.white : Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

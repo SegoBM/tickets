@@ -36,11 +36,13 @@ import '../../shared/widgets/PopUpMenu/PopupMenuTickets.dart';
 import '../../shared/widgets/Snackbars/customSnackBar.dart';
 import '../../shared/widgets/buttons/custom_button.dart';
 import '../../shared/widgets/buttons/custom_dropdown_button.dart';
+import '../../shared/widgets/progressBar/progressBar.dart';
 import '../../shared/widgets/textfields/my_textfield_icon.dart';
 import 'package:fading_edge_scrollview/fading_edge_scrollview.dart';
 
 import 'customNoDataTickets.dart';
 import 'loadingDialogTickets.dart';
+
 class TicketsLevantados extends StatefulWidget {
   static String id = 'TicketsLevantados';
   BuildContext context;
@@ -51,24 +53,35 @@ class TicketsLevantados extends StatefulWidget {
 }
 
 class _TicketsLevantados extends State<TicketsLevantados> {
-  late Size size; final key = GlobalKey(); FocusNode focusNode = FocusNode();
+  late Size size;
+  final key = GlobalKey();
+  FocusNode focusNode = FocusNode();
   late Timer _timer;
-  TextEditingController searchController = TextEditingController(), dateInitial = TextEditingController();
-  ScrollController scrollController = ScrollController(), scrollControllerMobile = ScrollController();
+  TextEditingController searchController = TextEditingController(),
+      dateInitial = TextEditingController();
+  ScrollController scrollController = ScrollController(),
+      scrollControllerMobile = ScrollController();
   AreaController areaController = AreaController();
   List<String> items = ["Item 1", "Item 2", "Item 3", "Item 4"];
   List<String> selectedItems1 = [], selectedItems2 = [];
   List<String> attachedFiles = ['archivo1.pdf', 'archivo2.docx', 'imagen.png'];
   List<String> status = ['Abierto', 'En Progreso'];
-  List<String> Importancia = ['Importante', 'Urgente', 'No urgente', 'Pregunta'];
+  List<String> Importancia = [
+    'Importante',
+    'Urgente',
+    'No urgente',
+    'Pregunta'
+  ];
   List<Color> statusColors = [Colors.green, Colors.orange];
   Color currentColor = Colors.green;
-  List<TicketsModels> listTickets = [], listTicketsTemp = [], listTicketsTempReport = [];
+  List<TicketsModels> listTickets = [],
+      listTicketsTemp = [],
+      listTicketsTempReport = [];
   DateTime? startDate, endDate, startDateReport, endDateReport;
   DateTime today = DateTime.now();
   bool isEmpty = false;
   bool _isLoading = true;
-  String statusConfirm = "",currentStatus = 'Abierto';
+  String statusConfirm = "", currentStatus = 'Abierto';
   ThemeData theme = ThemeData();
   final ticketViewController = TicketViewController();
   UserPreferences userPreferences = UserPreferences();
@@ -90,85 +103,140 @@ class _TicketsLevantados extends State<TicketsLevantados> {
       }
     });
   }
+
   @override
   void dispose() {
     _timer.cancel();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
-    size = MediaQuery.of(context).size; theme = Theme.of(context);
+    size = MediaQuery.of(context).size;
+    theme = Theme.of(context);
     return Scaffold(
       backgroundColor: ColorPalette.ticketsTextSelectedColor,
       floatingActionButton: size.width > 500 ? null : customButtonAddMobile(),
       body: size.width > 500 ? body() : bodyMobile(),
     );
   }
+
   List<Widget> _filtros() {
     return [
-      SizedBox(width: 250, height: 55,
-        child: MyTextfieldIcon(labelText: Texts.searchTicket, colorLineBase: Colors.black54,
-          textController: searchController, textColor: Colors.black54, cursorColor: Colors.black54,
+      SizedBox(
+        width: 250,
+        height: 55,
+        child: MyTextfieldIcon(
+          labelText: Texts.searchTicket,
+          colorLineBase: Colors.black54,
+          textController: searchController,
+          textColor: Colors.black54,
+          cursorColor: Colors.black54,
           suffixIcon: const Icon(IconLibrary.iconSearch, color: Colors.black),
-          floatingLabelStyle: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-          backgroundColor: ColorPalette.ticketsSelectedColor, formatting: false, focusNode: focusNode,
-          colorLine: Colors.black54, textStyle: const TextStyle(color: Colors.black54),
+          floatingLabelStyle:
+              const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          backgroundColor: ColorPalette.ticketsSelectedColor,
+          formatting: false,
+          focusNode: focusNode,
+          colorLine: Colors.black54,
+          textStyle: const TextStyle(color: Colors.black54),
           onChanged: (value) {
-           aplicarFiltro();
-           setState(() {
-             FocusScope.of(context).requestFocus(focusNode);
-           });
+            aplicarFiltro();
+            setState(() {
+              FocusScope.of(context).requestFocus(focusNode);
+            });
           },
         ),
       ),
-      const SizedBox(width: 10,),
-      Container(padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8), width: 250,
-        decoration: BoxDecoration(color: ColorPalette.ticketsSelectedColor,
-            borderRadius: BorderRadius.circular(10)),
-        child: CustomDropdownButton(context: context, items: status, selectedItems: selectedItems1,
-            textColor: Colors.black54, backgroundColor: ColorPalette.ticketsColor4, setState: setState,
-            text: Texts.ticketSelectStatus, color: Colors.black54,
-            onTap: () {aplicarFiltro();}),
+      const SizedBox(
+        width: 10,
       ),
-      const SizedBox(width: 10,),
-      Container(padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
-        width: 250, decoration: BoxDecoration(color: ColorPalette.ticketsSelectedColor,
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
+        width: 250,
+        decoration: BoxDecoration(
+            color: ColorPalette.ticketsSelectedColor,
             borderRadius: BorderRadius.circular(10)),
-        child: CustomDropdownButton(context: context, items: Importancia,
-            selectedItems: selectedItems2, setState: setState,
-            text: Texts.ticketSelectImportance, color: Colors.black54,
-            textColor: Colors.black54, backgroundColor: ColorPalette.ticketsColor4,
-            onTap: () {aplicarFiltro();}),
+        child: CustomDropdownButton(
+            context: context,
+            items: status,
+            selectedItems: selectedItems1,
+            textColor: Colors.black54,
+            backgroundColor: ColorPalette.ticketsColor4,
+            setState: setState,
+            text: Texts.ticketSelectStatus,
+            color: Colors.black54,
+            onTap: () {
+              aplicarFiltro();
+            }),
       ),
-      const SizedBox(width: 10,),
+      const SizedBox(
+        width: 10,
+      ),
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
+        width: 250,
+        decoration: BoxDecoration(
+            color: ColorPalette.ticketsSelectedColor,
+            borderRadius: BorderRadius.circular(10)),
+        child: CustomDropdownButton(
+            context: context,
+            items: Importancia,
+            selectedItems: selectedItems2,
+            setState: setState,
+            text: Texts.ticketSelectImportance,
+            color: Colors.black54,
+            textColor: Colors.black54,
+            backgroundColor: ColorPalette.ticketsColor4,
+            onTap: () {
+              aplicarFiltro();
+            }),
+      ),
+      const SizedBox(
+        width: 10,
+      ),
       FloatingActionButton(
         onPressed: () {
           HapticFeedback.vibrate();
-          LoadingDialogTickets.showLoadingDialogTickets(context, Texts.ticketLoading);
-          showDialog<DateTimeRange>(context: context,
-            builder:  size.width>500? (context) => AlertDialog(
-              backgroundColor: Colors.transparent, surfaceTintColor: Colors.transparent,
-              content: SizedBox(width: 338, height: 530, child: dialogCustomDateRangePickerFilter()),
-            ) : (context) => dialogCustomDateRangePickerFilter(),
+          LoadingDialogTickets.showLoadingDialogTickets(
+              context, Texts.ticketLoading);
+          showDialog<DateTimeRange>(
+            context: context,
+            builder: size.width > 500
+                ? (context) => AlertDialog(
+                      backgroundColor: Colors.transparent,
+                      surfaceTintColor: Colors.transparent,
+                      content: SizedBox(
+                          width: 338,
+                          height: 530,
+                          child: dialogCustomDateRangePickerFilter()),
+                    )
+                : (context) => dialogCustomDateRangePickerFilter(),
           );
         },
-        tooltip: Texts.ticketSelectDateRange, backgroundColor: ColorPalette.ticketsColor,
-        child: const Icon(Icons.calendar_today_outlined, color: Colors.white,),
+        tooltip: Texts.ticketSelectDateRange,
+        backgroundColor: ColorPalette.ticketsColor,
+        child: const Icon(
+          Icons.calendar_today_outlined,
+          color: Colors.white,
+        ),
       ),
     ];
   }
+
   Widget dialogCustomDateRangePickerFilter() {
     return CustomDateRangePicker(
-      minimumDate: DateTime(2024,1,1),
+      minimumDate: DateTime(2024, 1, 1),
       maximumDate: DateTime.now().add(const Duration(days: 100)),
-      backgroundColor: Colors.white, primaryColor: ColorPalette.ticketsColor,
+      backgroundColor: Colors.white,
+      primaryColor: ColorPalette.ticketsColor,
       onApplyClick: (start, end) {
         setState(() async {
           endDate = end.add(const Duration(days: 1));
           startDate = start;
           Navigator.of(context, rootNavigator: true).pop();
           await aplicarFiltroFecha();
-          await Future.delayed(const Duration(milliseconds: 400), (){
+          await Future.delayed(const Duration(milliseconds: 400), () {
             LoadingDialogTickets.hideLoadingDialogTickets(context);
           });
         });
@@ -178,76 +246,143 @@ class _TicketsLevantados extends State<TicketsLevantados> {
           endDate = null;
           startDate = null;
           Navigator.of(context, rootNavigator: true).pop();
-          await Future.delayed(const Duration(milliseconds: 400), (){
+          await Future.delayed(const Duration(milliseconds: 400), () {
             LoadingDialogTickets.hideLoadingDialogTickets(context);
           });
         });
       },
     );
   }
+
   Widget _customButtonShowConversation(String idTickets) {
-    return CustomButton(text: size.width > 1050 ? Texts.conversacion : "",
-        onPressed: () async {showConversation(idTickets);},
-        icon: IconLibrary.iconConversation, height: 50,
-        width: size.width < 1050 ? 30 : 108, color: ColorPalette.ticketsColor.withOpacity(0.9),
+    return CustomButton(
+        text: size.width > 1050 ? Texts.conversacion : "",
+        onPressed: () async {
+          showConversation(idTickets);
+        },
+        icon: IconLibrary.iconConversation,
+        height: 50,
+        width: size.width < 1050 ? 30 : 108,
+        color: ColorPalette.ticketsColor.withOpacity(0.9),
         colorText: Colors.white);
   }
-  Widget customButtonShowConversationMobile(String idTickets, {double width = 108, double height = 50, double widthIcon = 30}){
-    return IconButton(onPressed: () async {showConversationMobile(idTickets);},
-        icon: const Icon(IconLibrary.iconConversation, color: Colors.white,),
-        style: ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(ColorPalette.ticketsColor),
+
+  Widget customButtonShowConversationMobile(String idTickets,
+      {double width = 108, double height = 50, double widthIcon = 30}) {
+    return IconButton(
+        onPressed: () async {
+          showConversationMobile(idTickets);
+        },
+        icon: const Icon(
+          IconLibrary.iconConversation,
+          color: Colors.white,
+        ),
+        style: ButtonStyle(
+          backgroundColor:
+              MaterialStateProperty.all<Color>(ColorPalette.ticketsColor),
           shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0),),
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
           ),
         ));
   }
+
   Widget _customButtonAdd() {
     return IntrinsicHeight(
-      child: CustomButton(text: Texts.ticketAdd,
-          onPressed: () async {addTicket();}, icon: IconLibrary.iconAdd, height: 50,
-          color: ColorPalette.ticketsColor.withOpacity(0.9), colorText: Colors.white),
+      child: CustomButton(
+          text: Texts.ticketAdd,
+          onPressed: () async {
+            addTicket();
+          },
+          icon: IconLibrary.iconAdd,
+          height: 50,
+          color: ColorPalette.ticketsColor.withOpacity(0.9),
+          colorText: Colors.white),
     );
   }
+
   Widget customButtonAddMobile() {
-    return IconButton(onPressed: (){HapticFeedback.heavyImpact();addTicket();}, icon: const Icon(IconLibrary.iconAdd,
-      color: ColorPalette.ticketsColor, size: 40,),
-        style: ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(ColorPalette.ticketsColor4),
+    return IconButton(
+        onPressed: () {
+          HapticFeedback.heavyImpact();
+          addTicket();
+        },
+        icon: const Icon(
+          IconLibrary.iconAdd,
+          color: ColorPalette.ticketsColor,
+          size: 40,
+        ),
+        style: ButtonStyle(
+          backgroundColor:
+              MaterialStateProperty.all<Color>(ColorPalette.ticketsColor4),
           shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0),),
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
           ),
         ));
   }
+
   Widget body() {
-    return Scaffold(backgroundColor: ColorPalette.ticketsTextSelectedColor,
-        appBar: MyCustomAppBarDesktop(title: "Levantados", context: context,
-          textColor: Colors.white, backButton: false, color: ColorPalette.ticketsColor,ticketsFlag: false,
+    return Scaffold(
+        backgroundColor: ColorPalette.ticketsTextSelectedColor,
+        appBar: MyCustomAppBarDesktop(
+          title: "Levantados",
+          context: context,
+          textColor: Colors.white,
+          backButton: false,
+          color: ColorPalette.ticketsColor,
+          ticketsFlag: false,
           defaultButtons: true,
-          backButtonWidget: TextButton.icon(icon: const Icon(IconLibrary.iconBack, color: Colors.white,),
-            label: const Text(Texts.ticketExit, style: TextStyle(color: Colors.white),),
-            style: TextButton.styleFrom(primary: Colors.white, backgroundColor: Colors.transparent,),
-            onPressed: () {Navigator.of(widget.context).pop();},
+          backButtonWidget: TextButton.icon(
+            icon: const Icon(
+              IconLibrary.iconBack,
+              color: Colors.white,
+            ),
+            label: const Text(
+              Texts.ticketExit,
+              style: TextStyle(color: Colors.white),
+            ),
+            style: TextButton.styleFrom(
+              primary: Colors.white,
+              backgroundColor: Colors.transparent,
+            ),
+            onPressed: () {
+              Navigator.of(widget.context).pop();
+            },
           ),
         ),
-        body: Padding(padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5),
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5),
           child: SingleChildScrollView(
             child: Column(
               children: [
                 if (size.width > 1260) ...[
-                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(children: [..._filtros(),],),
-                      _customButtonAdd(),
+                      Row(
+                        children: [
+                          ..._filtros(),
+                        ],
+                      ),
+                      //  _customButtonAdd(),
                     ],
                   )
                 ] else ...[
                   Row(
                     children: [
                       _filtros()[0],
-                      const SizedBox(width: 10,),
+                      const SizedBox(
+                        width: 10,
+                      ),
                       _filtros()[2]
                     ],
                   ),
-                  const SizedBox(height: 5,),
+                  const SizedBox(
+                    height: 5,
+                  ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -255,48 +390,77 @@ class _TicketsLevantados extends State<TicketsLevantados> {
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           _filtros()[4],
-                          const SizedBox(width: 10,),
+                          const SizedBox(
+                            width: 10,
+                          ),
                           _filtros()[6],
                         ],
                       ),
-                      _customButtonAdd(),
+                      //_customButtonAdd(),
                     ],
                   ),
                 ],
-                const SizedBox(height: 5,),
-                SizedBox(height: size.height - 120,
-                    child: Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(15.0),
-                        color: ColorPalette.ticketsColor,), padding: const EdgeInsets.all(3),
-                      child: futureList(),))
+                const SizedBox(
+                  height: 5,
+                ),
+                SizedBox(
+                    height: size.height - 120,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15.0),
+                        color: ColorPalette.ticketsColor,
+                      ),
+                      padding: const EdgeInsets.all(3),
+                      child: futureList(),
+                    ))
               ],
             ),
           ),
         ));
     //body: Column(children: [..._filtros()],),);
   }
+
   Widget bodyMobile() {
-    return Scaffold(backgroundColor: ColorPalette.ticketsTextSelectedColor,
-        body: Padding(padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+    return Scaffold(
+        backgroundColor: ColorPalette.ticketsTextSelectedColor,
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
           child: SingleChildScrollView(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                FadingEdgeScrollView.fromSingleChildScrollView(child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,controller: scrollControllerMobile,
-                  child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,children: [
-                    _filtros()[0],
-                    const SizedBox(width: 5,),
-                    _filtros()[6],
-                    const SizedBox(width: 5,),
-                    buttonFilters(),
-                    //const SizedBox(width: 5,),
-                  ],),
+                FadingEdgeScrollView.fromSingleChildScrollView(
+                    child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  controller: scrollControllerMobile,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _filtros()[0],
+                      const SizedBox(
+                        width: 5,
+                      ),
+                      _filtros()[6],
+                      const SizedBox(
+                        width: 5,
+                      ),
+                      buttonFilters(),
+                      //const SizedBox(width: 5,),
+                    ],
+                  ),
                 )),
-                const SizedBox(height: 5,),
-                SizedBox(height: size.height - 150,
+                const SizedBox(
+                  height: 5,
+                ),
+                SizedBox(
+                    height: size.height - 150,
                     child: Container(
-                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(15.0),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15.0),
                         color: ColorPalette.ticketsColor,
-                      ), padding: const EdgeInsets.all(2), child: futureList(mobile: true),
+                      ),
+                      padding: const EdgeInsets.all(2),
+                      child: futureList(mobile: true),
                     ))
               ],
             ),
@@ -319,52 +483,85 @@ class _TicketsLevantados extends State<TicketsLevantados> {
             if (_isLoading) {
               return Center(child: _buildLoadingIndicator(10));
             } else {
-                return RefreshIndicator(child: SingleChildScrollView(child: Center(child: NoDataWidgetTickets(text: "No se encontrarón Tickets",)),),
-                    onRefresh: () async {await _getDatos();});
-              }
+              return RefreshIndicator(
+                  child: SingleChildScrollView(
+                    child: Center(
+                        child: NoDataWidgetTickets(
+                      text: "No se encontrarón Tickets",
+                    )),
+                  ),
+                  onRefresh: () async {
+                    await _getDatos();
+                  });
+            }
           }
         }
       },
     );
   }
+
   Widget futureListTickets(bool mobile) {
-    return RefreshIndicator(onRefresh: (){return _getDatos();}, color: ColorPalette.ticketsColor2,backgroundColor: ColorPalette.ticketsUnselectedColor,
-      child: Scrollbar(thumbVisibility: true, controller: scrollController,
-      child: FadingEdgeScrollView.fromScrollView(
-        child: ListView.builder(shrinkWrap: true,physics: const AlwaysScrollableScrollPhysics(),
-          controller: scrollController, itemCount: listTicketsTemp.length,
-          itemBuilder: (context, index) {
-            return !mobile? card(listTicketsTemp[index]) : cardMobile(listTicketsTemp[index]);
-          },
+    return RefreshIndicator(
+      onRefresh: () {
+        return _getDatos();
+      },
+      color: ColorPalette.ticketsColor2,
+      backgroundColor: ColorPalette.ticketsUnselectedColor,
+      child: Scrollbar(
+        thumbVisibility: true,
+        controller: scrollController,
+        child: FadingEdgeScrollView.fromScrollView(
+          child: ListView.builder(
+            shrinkWrap: true,
+            physics: const AlwaysScrollableScrollPhysics(),
+            controller: scrollController,
+            itemCount: listTicketsTemp.length,
+            itemBuilder: (context, index) {
+              return !mobile
+                  ? card(listTicketsTemp[index])
+                  : cardMobile(listTicketsTemp[index]);
+            },
+          ),
         ),
       ),
-    ),);
+    );
   }
 
   Widget _buildLoadingIndicator(int n) {
     List<Widget> buttonList = List.generate(n, (index) {
       return cardEsqueleto(size.width);
     });
-    return SingleChildScrollView(physics: const NeverScrollableScrollPhysics(),
-      child: Column(children: buttonList,),
+    return SingleChildScrollView(
+      physics: const NeverScrollableScrollPhysics(),
+      child: Column(
+        children: buttonList,
+      ),
     );
   }
 
   Widget cardEsqueleto(double width) {
-    return SizedBox(width: width,
+    return SizedBox(
+      width: width,
       height: max(152 * (size.width / 1200), 180.0),
-      child: Container(margin: const EdgeInsets.all(5),
-        decoration: BoxDecoration(color: ColorPalette.ticketsColor7,
+      child: Container(
+        margin: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+          color: ColorPalette.ticketsColor7,
           borderRadius: BorderRadius.circular(10.0),
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-          child: Shimmer.fromColors(baseColor: ColorPalette.ticketsColor7,
+          child: Shimmer.fromColors(
+            baseColor: ColorPalette.ticketsColor7,
             highlightColor: ColorPalette.ticketsColor2 == Brightness.light
-                ? const Color.fromRGBO(195, 193, 186, 1.0) : const Color.fromRGBO(46, 61, 68, 1),
+                ? const Color.fromRGBO(195, 193, 186, 1.0)
+                : const Color.fromRGBO(46, 61, 68, 1),
             enabled: true,
-            child: Container(margin: const EdgeInsets.all(3),
-              decoration: BoxDecoration(color: Colors.grey, borderRadius: BorderRadius.circular(8),
+            child: Container(
+              margin: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                color: Colors.grey,
+                borderRadius: BorderRadius.circular(8),
               ),
             ),
           ),
@@ -374,80 +571,142 @@ class _TicketsLevantados extends State<TicketsLevantados> {
   }
 
   Widget card(TicketsModels tickets) {
-    return SizedBox(height: max(153 * (size.width / 1200), 178.0),
-      child: Card(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0),),
-        color: ColorPalette.ticketsColor7, elevation: 0,
-        child: Padding(padding: const EdgeInsets.all(5.0),
-          child: Row(mainAxisAlignment: MainAxisAlignment.start,
+    double progreso = calcularProgreso(tickets);
+    return SizedBox(
+      height: max(153 * (size.width / 1200), 178.0),
+      child: Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        color: ColorPalette.ticketsColor7,
+        elevation: 0,
+        child: Padding(
+          padding: const EdgeInsets.all(5.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Expanded(flex: 1,
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Container(alignment: Alignment.center,
-                      decoration: BoxDecoration(color: ColorPalette.ticketsColor, borderRadius: BorderRadius.circular(7.0)),
-                      padding: const EdgeInsets.symmetric(horizontal: 10), height: 40, width: 250,
+              Expanded(
+                flex: 1,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                          color: ColorPalette.ticketsColor,
+                          borderRadius: BorderRadius.circular(7.0)),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      height: 40,
+                      width: 250,
                       transformAlignment: Alignment.center,
-                      child:Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                             Expanded(child: ListView(padding: const EdgeInsets.only(top: 5.0),
-                               scrollDirection: Axis.horizontal,
-                        children: [
-                          Tooltip(message: "Título: ${tickets.Titulo}", waitDuration: const Duration(milliseconds: 800),
-                            child: Text(tickets.Titulo, style: const TextStyle(color: Colors.white,
-                              fontSize: 15, fontWeight: FontWeight.bold,
-                            ),
-                          ),)
-                        ],
-                      )
-                      ),
-                          if(tickets.Estatus =="Cerrado")...[
-                            const SizedBox(width: 15,)
-                          ]else...[
+                          Expanded(
+                              child: ListView(
+                            padding: const EdgeInsets.only(top: 5.0),
+                            scrollDirection: Axis.horizontal,
+                            children: [
+                              Tooltip(
+                                message: "Título: ${tickets.Titulo}",
+                                waitDuration: const Duration(milliseconds: 800),
+                                child: Text(
+                                  tickets.Titulo,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              )
+                            ],
+                          )),
+                          if (tickets.Estatus == "Cerrado") ...[
+                            const SizedBox(
+                              width: 15,
+                            )
+                          ] else ...[
                             buttons(tickets)[2],
                           ],
                         ],
                       ),
                     ),
-                    const SizedBox(height: 5,),
-                    Text("Ticket # ${tickets.NumeroTicket}",
-                      style: const TextStyle(color: Colors.tealAccent, fontSize: 12,),
+                    const SizedBox(
+                      height: 5,
                     ),
-                    const SizedBox(height: 8,),
-                    Text("Usuario: ${tickets.NombreUsuarioAsignado??tickets.NombreDepartamento}",overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: Colors.white.withOpacity(0.8),
-                          fontSize: 13 * (size.width / 1400), fontWeight: FontWeight.bold),
+                    Text(
+                      "Ticket # ${tickets.NumeroTicket}",
+                      style: const TextStyle(
+                        color: Colors.tealAccent,
+                        fontSize: 12,
+                      ),
                     ),
-                    const SizedBox(height: 5,),
-                    Text("Departamento: ${tickets.NombreDepartamento}",
-                      style: TextStyle(color: Colors.white.withOpacity(0.8),
-                          fontSize: 13 * (size.width / 1400), fontWeight: FontWeight.bold),
+                    const SizedBox(
+                      height: 8,
                     ),
-                  const SizedBox(height: 10,),
-                  buttons(tickets)[3],
+                    Text(
+                      "Usuario: ${tickets.NombreUsuarioAsignado ?? tickets.NombreDepartamento}",
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          color: Colors.white.withOpacity(0.8),
+                          fontSize: 13 * (size.width / 1400),
+                          fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    Text(
+                      "Departamento: ${tickets.NombreDepartamento}",
+                      style: TextStyle(
+                          color: Colors.white.withOpacity(0.8),
+                          fontSize: 13 * (size.width / 1400),
+                          fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    buttons(tickets)[3],
                   ],
                 ),
               ),
-              Expanded(flex: 2,
-                  child:
-                  SingleChildScrollView(controller: ScrollController(), scrollDirection: Axis.vertical,
-                    child:
-                    Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.start,
+              Expanded(
+                  flex: 2,
+                  child: SingleChildScrollView(
+                    controller: ScrollController(),
+                    scrollDirection: Axis.vertical,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Container(alignment: Alignment.centerLeft,
-                          child: Container(width: 700, padding: const EdgeInsets.all(10.0),
-                            decoration: BoxDecoration(color: ColorPalette.ticketsColor6,
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          child: Container(
+                            width: 700,
+                            padding: const EdgeInsets.all(10.0),
+                            decoration: BoxDecoration(
+                              color: ColorPalette.ticketsColor6,
                               borderRadius: BorderRadius.circular(4.0),
                             ),
-                            child: Text("Descripción:  ${tickets.Descripcion}", maxLines: 3,
-                              style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w800),
+                            child: Text(
+                              "Descripción:  ${tickets.Descripcion}",
+                              maxLines: 3,
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800),
                             ),
                           ),
                         ),
-                        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Expanded(
-                                child: Text("Fecha de creación : ${tickets.FechaCreacion?.split("T")[0]} ${tickets.FechaCreacion?.split("T")[1].split(".")[0]}",
-                                  style: TextStyle(color: Colors.white.withOpacity(0.5),
-                                    fontSize: min(17 * (size.width / 1200), 12.0),
+                                child: Text(
+                                  "Fecha de creación : ${tickets.FechaCreacion?.split("T")[0]} ${tickets.FechaCreacion?.split("T")[1].split(".")[0]}",
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.5),
+                                    fontSize:
+                                        min(17 * (size.width / 1200), 12.0),
                                   ),
                                 ),
                               ),
@@ -455,44 +714,81 @@ class _TicketsLevantados extends State<TicketsLevantados> {
                                 child: tickets.FechaFinalizacion == null
                                     ? Container() // No muestra nada si FechaFinalizacion es nulo
                                     : Text(
-                                  "Fecha de finalización : ${tickets.FechaFinalizacion?.split("T")[0] ?? ""} ${tickets.FechaFinalizacion?.split("T")[1].split(".")[0] ?? ""}",
-                                  style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: min(17 * (size.width / 1200), 12.0)),
-                                ),
+                                        "Fecha de finalización : ${tickets.FechaFinalizacion?.split("T")[0] ?? ""} ${tickets.FechaFinalizacion?.split("T")[1].split(".")[0] ?? ""}",
+                                        style: TextStyle(
+                                            color:
+                                                Colors.white.withOpacity(0.5),
+                                            fontSize: min(
+                                                17 * (size.width / 1200),
+                                                12.0)),
+                                      ),
                               ),
                             ]),
-                        const SizedBox(height: 15,),
-                        tickets.Imagen1!.isEmpty && tickets.Imagen2!.isEmpty && tickets.Imagen3!.isEmpty
-                            ? SizedBox(height: 90,)
-                            : const Text("Archivos adjuntos:",
-                          style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),),
+                        const SizedBox(
+                          height: 15,
+                        ),
+                        tickets.Imagen1!.isEmpty &&
+                                tickets.Imagen2!.isEmpty &&
+                                tickets.Imagen3!.isEmpty
+                            ? SizedBox(
+                                height: 90,
+                              )
+                            : const Text(
+                                "Archivos adjuntos:",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold),
+                              ),
                         Row(
                           children: [
-                            if (tickets.Imagen1 != null && tickets.Imagen1!.isNotEmpty) ...[
-                              Padding(padding: const EdgeInsets.all(8.0),
-                                child: MouseRegion(cursor: SystemMouseCursors.click,
+                            if (tickets.Imagen1 != null &&
+                                tickets.Imagen1!.isNotEmpty) ...[
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: MouseRegion(
+                                  cursor: SystemMouseCursors.click,
                                   child: GestureDetector(
-                                    onTap: () {_showImageDialog(tickets.Imagen1!);},
-                                    child: const Icon(Icons.insert_drive_file, color: Colors.white), // Icono de archivo
+                                    onTap: () {
+                                      _showImageDialog(tickets.Imagen1!);
+                                    },
+                                    child: const Icon(Icons.insert_drive_file,
+                                        color:
+                                            Colors.white), // Icono de archivo
                                   ),
                                 ),
                               ),
                             ],
-                            if (tickets.Imagen2 != null && tickets.Imagen2!.isNotEmpty) ...[
-                              Padding(padding: const EdgeInsets.all(8.0),
-                                child: MouseRegion(cursor: SystemMouseCursors.click,
+                            if (tickets.Imagen2 != null &&
+                                tickets.Imagen2!.isNotEmpty) ...[
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: MouseRegion(
+                                  cursor: SystemMouseCursors.click,
                                   child: GestureDetector(
-                                    onTap: () {_showImageDialog(tickets.Imagen2!);},
-                                    child: const Icon(Icons.insert_drive_file, color: Colors.white), // Icono de archivo
+                                    onTap: () {
+                                      _showImageDialog(tickets.Imagen2!);
+                                    },
+                                    child: const Icon(Icons.insert_drive_file,
+                                        color:
+                                            Colors.white), // Icono de archivo
                                   ),
                                 ),
                               ),
                             ],
-                            if (tickets.Imagen3 != null && tickets.Imagen3!.isNotEmpty) ...[
-                              Padding(padding: const EdgeInsets.all(8.0),
-                                child: MouseRegion(cursor: SystemMouseCursors.click,
+                            if (tickets.Imagen3 != null &&
+                                tickets.Imagen3!.isNotEmpty) ...[
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: MouseRegion(
+                                  cursor: SystemMouseCursors.click,
                                   child: GestureDetector(
-                                    onTap: () {_showImageDialog(tickets.Imagen3!);},
-                                    child: const Icon(Icons.insert_drive_file, color: Colors.white), // Icono de archivo
+                                    onTap: () {
+                                      _showImageDialog(tickets.Imagen3!);
+                                    },
+                                    child: const Icon(Icons.insert_drive_file,
+                                        color:
+                                            Colors.white), // Icono de archivo
                                   ),
                                 ),
                               ),
@@ -501,185 +797,340 @@ class _TicketsLevantados extends State<TicketsLevantados> {
                         ),
                       ],
                     ),
-                  )
-
-              ),
-              Expanded(flex: 1,
-                  child: Row(mainAxisAlignment: MainAxisAlignment.end,children: [
-                    Column(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(children: [
-                          if (size.width > 1100) ...[
-                            const SizedBox(width: 6,),
-                            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                              buttons(tickets)[0],
-                              const SizedBox(width: 5),
-                              buttons(tickets)[1],
-                            ],),
-                            const SizedBox(width: 10,)
-                          ] else ...[
-                            Column(children: [
-                              buttons(tickets)[0],
-                              const SizedBox(height: 10,),
-                              buttons(tickets)[1],
-                              const SizedBox(height: 8,),
+                  )),
+              Expanded(
+                  flex: 1,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(children: [
+                            if (size.width > 1100) ...[
+                              const SizedBox(
+                                width: 6,
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  buttons(tickets)[1],
+                                ],
+                              ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(2.0),
+                                    child: ProgressBar(
+                                    progreso: progreso,
+                                    onTap: (status) {
+                                    print('Status tapped: $status');
+                                  },
+                                ),
+                              ),
+                            ] else ...[
+                              Column(
+                                children: [
+                                  buttons(tickets)[0],
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  buttons(tickets)[1],
+                                  const SizedBox(
+                                    height: 8,
+                                  ),
+                                ],
+                              ),
                             ],
-                            ),
-                          ],
-                        ]),
-                        Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                          Center(child: _customButtonShowConversation(tickets.IDTickets!)),
-                        ],),
-                      ],
-                    ),
-                  ],)
-              )
+                          ]),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Center(
+                                  child: _customButtonShowConversation(
+                                      tickets.IDTickets!)),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ))
             ],
           ),
         ),
       ),
     );
   }
+
   Widget cardMobile(TicketsModels tickets) {
     return GestureDetector(
-      onDoubleTap: (){
-      if(tickets.Estatus != "Cerrado"){
-        CustomAwesomeDialogTickets(title: Texts.ticketEditConfirm, desc: "Ticket: #${tickets.NumeroTicket}", btnOkOnPress: () async {
-          await editTicket(tickets);
-        }, btnCancelOnPress: () {}, width: size.width<500? size.width*.9:null).showQuestion(context);
-      }else{
-        MyCherryToast.showWarningSnackBar(context, theme, Texts.ticketErrorClose);
-      }
-    },
-      onTap: () async {HapticFeedback.vibrate();ticketResume(tickets);},
-      child: Card(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0),),
-      color: ColorPalette.ticketsColor7, elevation: 0,
-      child: Padding(padding: const EdgeInsets.all(5.0),
-        child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(flex: 1,
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,children: [
-                    Row(children: [
-                      if(tickets.Estatus =="Cerrado")...[
-                        const SizedBox()
-                      ]else...[
-                        buttons(tickets)[2],
+      onDoubleTap: () {
+        if (tickets.Estatus != "Cerrado") {
+          CustomAwesomeDialogTickets(
+                  title: Texts.ticketEditConfirm,
+                  desc: "Ticket: #${tickets.NumeroTicket}",
+                  btnOkOnPress: () async {
+                    await editTicket(tickets);
+                  },
+                  btnCancelOnPress: () {},
+                  width: size.width < 500 ? size.width * .9 : null)
+              .showQuestion(context);
+        } else {
+          MyCherryToast.showWarningSnackBar(
+              context, theme, Texts.ticketErrorClose);
+        }
+      },
+      onTap: () async {
+        HapticFeedback.vibrate();
+        ticketResume(tickets);
+      },
+      child: Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        color: ColorPalette.ticketsColor7,
+        elevation: 0,
+        child: Padding(
+          padding: const EdgeInsets.all(5.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                flex: 1,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            if (tickets.Estatus == "Cerrado") ...[
+                              const SizedBox()
+                            ] else ...[
+                              buttons(tickets)[2],
+                            ],
+                            Tooltip(
+                              message: "Título:\t${tickets.Titulo}",
+                              child: SizedBox(
+                                width: tickets.Titulo.length > 10
+                                    ? size.width / 3.2 +
+                                        (tickets.Estatus == "Cerrado" ? 15 : 0)
+                                    : null,
+                                child: Text(
+                                  tickets.Titulo,
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 15 * (size.width / 350),
+                                      fontWeight: FontWeight.bold,
+                                      overflow: TextOverflow.ellipsis),
+                                ),
+                              ),
+                            ),
+                            Text(
+                              "\t# ${tickets.NumeroTicket}",
+                              style: const TextStyle(
+                                color: Colors.tealAccent,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(
+                          width: size.width / 2.2,
+                          child: Wrap(
+                            spacing: 2,
+                            alignment: WrapAlignment.end,
+                            runSpacing: 5,
+                            children: [
+                              buttons(tickets)[0],
+                              buttons(tickets)[1],
+                            ],
+                          ),
+                        )
                       ],
-                      Tooltip(message: "Título:\t${tickets.Titulo}",
-                        child: SizedBox(width: tickets.Titulo.length>10? size.width/3.2 + (tickets.Estatus == "Cerrado"? 15 : 0): null, child: Text(tickets.Titulo,
-                         style: TextStyle(color: Colors.white, fontSize: 15 * (size.width / 350),
-                             fontWeight: FontWeight.bold, overflow: TextOverflow.ellipsis),),),),
-                      Text("\t# ${tickets.NumeroTicket}",
-                        style: const TextStyle(color: Colors.tealAccent, fontSize: 12,),),
-                    ],),
-                    SizedBox(width: size.width/2.2,
-                      child: Wrap(spacing: 2, alignment: WrapAlignment.end,
-                        runSpacing: 5,
-                        children: [
-                          buttons(tickets)[0],
-                          buttons(tickets)[1],
-                        ],),)
-                  ],),
-                  Text("Fecha de creación : ${tickets.FechaCreacion?.split("T")[0]} ${tickets.FechaCreacion?.split("T")[1].split(".")[0]}",
-                    style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: min(10 * (size.width / 500), 12.0),),
-                  ),
-                  if(tickets.FechaFinalizacion != null) ...[
-                    Text("Fecha de finalización  : ${tickets.FechaFinalizacion?.split("T")[0] ?? ""} ${tickets.FechaFinalizacion?.split("T")[1].split(".")[0] ?? ""}",
-                      style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: min(10 * (size.width / 500), 12.0)),
                     ),
+                    Text(
+                      "Fecha de creación : ${tickets.FechaCreacion?.split("T")[0]} ${tickets.FechaCreacion?.split("T")[1].split(".")[0]}",
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.5),
+                        fontSize: min(10 * (size.width / 500), 12.0),
+                      ),
+                    ),
+                    if (tickets.FechaFinalizacion != null) ...[
+                      Text(
+                        "Fecha de finalización  : ${tickets.FechaFinalizacion?.split("T")[0] ?? ""} ${tickets.FechaFinalizacion?.split("T")[1].split(".")[0] ?? ""}",
+                        style: TextStyle(
+                            color: Colors.white.withOpacity(0.5),
+                            fontSize: min(10 * (size.width / 500), 12.0)),
+                      ),
+                    ],
+                    Text(
+                      "Descripción:  ${tickets.Descripcion}",
+                      maxLines: 3,
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11 * (size.width / 350),
+                          fontWeight: FontWeight.w800),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Usuario: ${tickets.UsuarioNombre}",
+                              style: TextStyle(
+                                  color: Colors.white.withOpacity(0.8),
+                                  fontSize: 13 * (size.width / 350),
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            Text(
+                              "Departamento: ${tickets.NombreDepartamento}",
+                              style: TextStyle(
+                                  color: Colors.white.withOpacity(0.8),
+                                  fontSize: 13 * (size.width / 350),
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Center(
+                              child: customButtonShowConversationMobile(
+                                  tickets.IDTickets!,
+                                  height: 25),
+                            ),
+                          ],
+                        ),
+                      ],
+                    )
                   ],
-                  Text("Descripción:  ${tickets.Descripcion}", maxLines: 3,
-                    style: TextStyle(color: Colors.white, fontSize: 11 * (size.width / 350), fontWeight: FontWeight.w800),),
-                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,children: [
-                    Column(crossAxisAlignment: CrossAxisAlignment.start,children: [
-                      Text("Usuario: ${tickets.UsuarioNombre}",
-                        style: TextStyle(color: Colors.white.withOpacity(0.8),
-                            fontSize: 13 * (size.width / 350), fontWeight: FontWeight.bold),),
-                      const SizedBox(height: 5,),
-                      Text("Departamento: ${tickets.NombreDepartamento}",
-                        style: TextStyle(color: Colors.white.withOpacity(0.8),
-                            fontSize: 13 * (size.width / 350), fontWeight: FontWeight.bold),),
-                    ],),
-                    Column(mainAxisAlignment: MainAxisAlignment.center,
-                      children: [Center(child: customButtonShowConversationMobile(tickets.IDTickets!,
-                          height: 25),),],),
-                  ],)
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),);
+    );
   }
+
+  double calcularProgreso(TicketsModels ticket) {
+    switch (ticket.Estatus) {
+      case 'Abierto':
+        return 0.25;
+      case 'En Progreso':
+        return 0.5;
+      case 'Resuelto':
+        return 0.75;
+      case 'Cerrado':
+        return 1.0;
+      default:
+        return 0.0;
+    }
+  }
+
   Color getColor(TicketsModels tickets) {
-    Duration time = DateTime.now().difference(DateTime.parse(tickets.FechaCreacion!));
+    Duration time =
+        DateTime.now().difference(DateTime.parse(tickets.FechaCreacion!));
     Color clock = Colors.white;
-    if(tickets.Estatus== "Cerrado"){
+    if (tickets.Estatus == "Cerrado") {
       clock = Colors.black;
-    } else if(tickets.Prioridad== "Importante") {
-      if(time.inDays < 2){
+    } else if (tickets.Prioridad == "Importante") {
+      if (time.inDays < 2) {
         clock = Colors.green;
-      } else if(time.inDays < 3){
+      } else if (time.inDays < 3) {
         clock = Colors.orange;
-      } else if(time.inDays >= 3){
+      } else if (time.inDays >= 3) {
         clock = Colors.red;
       }
-    } else if(tickets.Prioridad== "Urgente") {
-      if(time.inDays < 0.5){
+    } else if (tickets.Prioridad == "Urgente") {
+      if (time.inDays < 0.5) {
         clock = Colors.green;
-      } else if(time.inDays < 1){
+      } else if (time.inDays < 1) {
         clock = Colors.orange;
-      } else if(time.inDays >= 1){
+      } else if (time.inDays >= 1) {
         clock = Colors.red;
       }
-    } else if(tickets.Prioridad== "No urgente") {
-      if(time.inDays < 3){
+    } else if (tickets.Prioridad == "No urgente") {
+      if (time.inDays < 3) {
         clock = Colors.green;
-      } else if(time.inDays < 4){
+      } else if (time.inDays < 4) {
         clock = Colors.orange;
-      } else if(time.inDays >= 4){
+      } else if (time.inDays >= 4) {
         clock = Colors.red;
       }
-    } else if(tickets.Prioridad== "Pregunta") {
-      if(time.inDays < 3){
+    } else if (tickets.Prioridad == "Pregunta") {
+      if (time.inDays < 3) {
         clock = Colors.green;
-      } else if(time.inDays < 4){
+      } else if (time.inDays < 4) {
         clock = Colors.orange;
-      } else if(time.inDays >= 4){
+      } else if (time.inDays >= 4) {
         clock = Colors.red;
       }
     }
     return clock;
   }
+
   Widget buttonCerrado(TicketsModels tickets) {
-    return Container(alignment: Alignment.center, decoration: const BoxDecoration(color: Colors.black,
-        borderRadius: BorderRadius.all(Radius.circular(5))), height: 25, width: 90,
-        child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return Container(
+        alignment: Alignment.center,
+        decoration: const BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.all(Radius.circular(5))),
+        height: 25,
+        width: 90,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            const Text("Cerrado", style: TextStyle(color: Colors.white, fontSize: 10,),),
-            InkWell(onTap: () async {await star(tickets);},
+            const Text(
+              "Cerrado",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+              ),
+            ),
+            InkWell(
+              onTap: () async {
+                await star(tickets);
+              },
               child: const Icon(Icons.star, size: 21, color: Colors.white),
             )
           ],
         ));
   }
-  Widget buttonOpciones(TicketsModels tickets){
-    return Container(alignment: Alignment.center, height: 25, width: 90,
-      decoration: BoxDecoration(color: statusColors[status.indexOf(tickets.Estatus)],
+
+  Widget buttonOpciones(TicketsModels tickets) {
+    return Container(
+      alignment: Alignment.center,
+      height: 25,
+      width: 90,
+      decoration: BoxDecoration(
+          color: statusColors[status.indexOf(tickets.Estatus)],
           borderRadius: const BorderRadius.all(Radius.circular(5))),
-      child: DropdownButton<String>(isExpanded: !Platform.isWindows,
-        dropdownColor: ColorPalette.ticketsColor, alignment: Alignment.center, value: tickets.Estatus,
-        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+      child: DropdownButton<String>(
+        isExpanded: !Platform.isWindows,
+        dropdownColor: ColorPalette.ticketsColor,
+        alignment: Alignment.center,
+        value: tickets.Estatus,
+        style: const TextStyle(
+            color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
         underline: Container(),
         onChanged: (String? newValue) async {
           HapticFeedback.vibrate();
           bool result = await comprobarSave();
           if (result) {
             await changeStatus(id: tickets.IDTickets!, estatus: newValue!);
-            listTickets.where((element) => element.IDTickets == tickets.IDTickets).first.Estatus = newValue;
+            listTickets
+                .where((element) => element.IDTickets == tickets.IDTickets)
+                .first
+                .Estatus = newValue;
             tickets.Estatus = newValue;
             setState(() {});
           }
@@ -693,175 +1144,342 @@ class _TicketsLevantados extends State<TicketsLevantados> {
 
   Future<void> star(TicketsModels tickets) async {
     LoadingDialogTickets.showLoadingDialogTickets(context, Texts.loadingData);
-    SatisfactionModel? satisfaction = await getQualification(tickets.IDTickets!);
+    SatisfactionModel? satisfaction =
+        await getQualification(tickets.IDTickets!);
 
     LoadingDialogTickets.hideLoadingDialogTickets(context);
-    if(satisfaction != null) {
-      showDialog(context: context, builder: (BuildContext context) {
-      return starDialog(satisfaction, context);
-    },);
-    }else{
-      MyCherryToast.showWarningSnackBar(context, theme, 'Error al obtener la calificación');
+    if (satisfaction != null) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return starDialog(satisfaction, context);
+        },
+      );
+    } else {
+      MyCherryToast.showWarningSnackBar(
+          context, theme, 'Error al obtener la calificación');
     }
   }
-  Widget starDialog(SatisfactionModel satisfaction, BuildContext context){
-    return AlertDialog(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7.0)),
+
+  Widget starDialog(SatisfactionModel satisfaction, BuildContext context) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7.0)),
       backgroundColor: ColorPalette.ticketsColor5,
-      title: const Text(Texts.ticketQualification, style: TextStyle(color: Colors.white),),
-      content: Container(height: 400, width: 500, padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration( borderRadius: BorderRadius.circular(10),),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.center,
+      title: const Text(
+        Texts.ticketQualification,
+        style: TextStyle(color: Colors.white),
+      ),
+      content: Container(
+        height: 400,
+        width: 500,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Container(width: 450,
-              decoration: BoxDecoration(color: ColorPalette.ticketsColor2, borderRadius: BorderRadius.circular(10),),
+            Container(
+              width: 450,
+              decoration: BoxDecoration(
+                color: ColorPalette.ticketsColor2,
+                borderRadius: BorderRadius.circular(10),
+              ),
               padding: const EdgeInsets.all(10),
-              child:Row(children: [
-                const Text('Calificación General: ',
-                    style: TextStyle(color: Colors.white, fontSize: 15,
-                        fontWeight: FontWeight.bold)),
-                Text(satisfaction.calificacion_General.toString(),
-                  style: const TextStyle(color: Colors.white, fontSize: 13),),
-              ],),),
-            const SizedBox(height: 5),
-            Container(decoration: BoxDecoration(color: ColorPalette.ticketsColor2, borderRadius: BorderRadius.circular(10),),
-              padding: const EdgeInsets.all(10),width: 450,
-              child: Row(children: [
-                const Text('Calificación Tiempo: ',
-                  style: TextStyle(color: Colors.white,
-                      fontSize: 15, fontWeight: FontWeight.bold),
-                ),
-                Text(satisfaction.calificacion_Tiempo.toString(),
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
-                ),
-              ],),),
-            const SizedBox(height: 5),
-            Container(decoration: BoxDecoration(color: ColorPalette.ticketsColor2, borderRadius: BorderRadius.circular(10),),
-              padding: const EdgeInsets.all(10),width: 450,
-              child: Row(children: [
-                const Text('Calificación Calidad: ', style: TextStyle(color: Colors.white,
-                        fontSize: 15, fontWeight: FontWeight.bold)),
-                Text(satisfaction.calificacion_Calidad.toString(),
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
-                ),
-              ],),),
-            const SizedBox(height: 5),
-            Container(height: 160,decoration: BoxDecoration(color: ColorPalette.ticketsColor2,
-              borderRadius: BorderRadius.circular(10),),
-                padding: const EdgeInsets.all(10),width: 450,
-                child: Row(children: [
-                  Column(crossAxisAlignment: CrossAxisAlignment.start,children: [
-                    const Text('Comentarios adicionales:', style: TextStyle(color: Colors.white,
-                            fontSize: 14, fontWeight: FontWeight.bold)),
-                    Text(satisfaction.Comentario.toString(),
-                        maxLines: 6, style: const TextStyle(color: Colors.white, fontSize: 13)),
-                  ],)
-                ],)
+              child: Row(
+                children: [
+                  const Text('Calificación General: ',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold)),
+                  Text(
+                    satisfaction.calificacion_General.toString(),
+                    style: const TextStyle(color: Colors.white, fontSize: 13),
+                  ),
+                ],
+              ),
             ),
+            const SizedBox(height: 5),
+            Container(
+              decoration: BoxDecoration(
+                color: ColorPalette.ticketsColor2,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              padding: const EdgeInsets.all(10),
+              width: 450,
+              child: Row(
+                children: [
+                  const Text(
+                    'Calificación Tiempo: ',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    satisfaction.calificacion_Tiempo.toString(),
+                    style: const TextStyle(color: Colors.white, fontSize: 13),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 5),
+            Container(
+              decoration: BoxDecoration(
+                color: ColorPalette.ticketsColor2,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              padding: const EdgeInsets.all(10),
+              width: 450,
+              child: Row(
+                children: [
+                  const Text('Calificación Calidad: ',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold)),
+                  Text(
+                    satisfaction.calificacion_Calidad.toString(),
+                    style: const TextStyle(color: Colors.white, fontSize: 13),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 5),
+            Container(
+                height: 160,
+                decoration: BoxDecoration(
+                  color: ColorPalette.ticketsColor2,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding: const EdgeInsets.all(10),
+                width: 450,
+                child: Row(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Comentarios adicionales:',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold)),
+                        Text(satisfaction.Comentario.toString(),
+                            maxLines: 6,
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 13)),
+                      ],
+                    )
+                  ],
+                )),
           ],
         ),
       ),
       actions: <Widget>[
-        TextButton(style: TextButton.styleFrom(primary: Colors.white),
+        TextButton(
+          style: TextButton.styleFrom(primary: Colors.white),
           onPressed: () {
             LoadingDialogTickets.hideLoadingDialogTickets(context);
             Navigator.of(context).pop();
-          },child: const Text('Cerrar'),
+          },
+          child: const Text('Cerrar'),
         ),
       ],
     );
   }
+
   List<Widget> buttons(TicketsModels tickets, {double width = 90}) {
     Color clock = getColor(tickets);
     return [
-      tickets.Estatus == "Cerrado" ? buttonCerrado(tickets) : tickets.Estatus == "Resuelto"
-          ? buttonsConfirm(tickets) : buttonOpciones(tickets),
-      Container(alignment: Alignment.center, decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(5),
-        color: tickets.Prioridad == "Urgente"
-            ? Colors.red : tickets.Prioridad == "Importante"
-            ? Colors.orange : tickets.Prioridad == "No urgente"
-            ? Colors.green : tickets.Prioridad == "Pregunta"
-            ? Colors.blue : Colors.black,
-      ),
-          height: 25, width: width,
-          child: Text(" ${tickets.Prioridad}", style: const TextStyle(color: Colors.white, fontSize: 10,),)),
-      tickets.Estatus == "Cerrado" ? Container() : Container(
-        alignment: Alignment.center,
-        child:  Icon(Icons.access_time_filled_outlined, color: clock, size: 20,),
-      ),
+      tickets.Estatus == "Cerrado"
+          ? buttonCerrado(tickets)
+          : tickets.Estatus == "Resuelto"
+              ? buttonsConfirm(tickets)
+              : buttonOpciones(tickets),
+      Container(
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(5),
+            color: tickets.Prioridad == "Urgente"
+                ? Colors.red
+                : tickets.Prioridad == "Importante"
+                    ? Colors.orange
+                    : tickets.Prioridad == "No urgente"
+                        ? Colors.green
+                        : tickets.Prioridad == "Pregunta"
+                            ? Colors.blue
+                            : Colors.black,
+          ),
+          height: 25,
+          width: width,
+          child: Text(
+            " ${tickets.Prioridad}",
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 10,
+            ),
+          )),
+      tickets.Estatus == "Cerrado"
+          ? Container()
+          : Container(
+              alignment: Alignment.center,
+              child: Icon(
+                Icons.access_time_filled_outlined,
+                color: clock,
+                size: 20,
+              ),
+            ),
       editButton(tickets)
     ];
   }
+
   Widget editButton(TicketsModels tickets) {
-    return tickets.Estatus != "Cerrado" ? Container(alignment: Alignment.center, height: 30, width: 120,
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: ColorPalette.ticketsColor2,),
-        child: TextButton(
-            onPressed: () async {
-              await editTicket(tickets);
-              await _getDatos();
-              setState(() {});
-            },
-            child: const Text("Editar ticket", style: TextStyle(color: Colors.white, fontSize: 12,),
-            ))) : Container();
+    return tickets.Estatus != "Cerrado"
+        ? Container(
+            alignment: Alignment.center,
+            height: 30,
+            width: 120,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              color: ColorPalette.ticketsColor2,
+            ),
+            child: TextButton(
+                onPressed: () async {
+                  await editTicket(tickets);
+                  await _getDatos();
+                  setState(() {});
+                },
+                child: const Text(
+                  "Editar ticket",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                  ),
+                )))
+        : Container();
   }
-  Widget buttonFilters(){
-    return FloatingActionButton(key: key,
+
+  Widget buttonFilters() {
+    return FloatingActionButton(
+      key: key,
       onPressed: () async {
-      HapticFeedback.vibrate();
+        HapticFeedback.vibrate();
         BuildContext context = key.currentContext!;
         final RenderBox button = context.findRenderObject() as RenderBox;
-        final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+        final RenderBox overlay =
+            Overlay.of(context).context.findRenderObject() as RenderBox;
         final RelativeRect position = RelativeRect.fromRect(
           Rect.fromPoints(
-            button.localToGlobal(button.size.bottomCenter(Offset.zero), ancestor: overlay),
-            button.localToGlobal(button.size.bottomCenter(Offset.zero), ancestor: overlay),
+            button.localToGlobal(button.size.bottomCenter(Offset.zero),
+                ancestor: overlay),
+            button.localToGlobal(button.size.bottomCenter(Offset.zero),
+                ancestor: overlay),
           ),
           Offset.zero & overlay.size,
         );
         var result = await showMenu(
-          context: context, position: position, elevation: 8.0, color: ColorPalette.ticketsColor4,
-          constraints: const BoxConstraints(maxWidth: 274.0), surfaceTintColor: Colors.transparent,
+          context: context,
+          position: position,
+          elevation: 8.0,
+          color: ColorPalette.ticketsColor4,
+          constraints: const BoxConstraints(maxWidth: 274.0),
+          surfaceTintColor: Colors.transparent,
           items: <PopupMenuEntry<String>>[
-            PopupMenuItem<String>(enabled: false, padding: EdgeInsets.zero,
-              child: MyPopupMenuButtonFilter(selectedItems1: selectedItems1, selectedItems2: selectedItems2,),
+            PopupMenuItem<String>(
+              enabled: false,
+              padding: EdgeInsets.zero,
+              child: MyPopupMenuButtonFilter(
+                selectedItems1: selectedItems1,
+                selectedItems2: selectedItems2,
+              ),
             ),
           ],
         );
         HapticFeedback.vibrate();
         aplicarFiltro();
-      }, tooltip: Texts.ticketFilterOptions, backgroundColor: ColorPalette.ticketsColor,
-      child: const Icon(Icons.filter_alt_rounded, color: Colors.white,),
+      },
+      tooltip: Texts.ticketFilterOptions,
+      backgroundColor: ColorPalette.ticketsColor,
+      child: const Icon(
+        Icons.filter_alt_rounded,
+        color: Colors.white,
+      ),
     );
   }
-  Widget buttonsConfirm(TicketsModels tickets){
-    return Column(children: [
-      GestureDetector(child: Container(alignment: Alignment.center, height: 25, width: 90,
-        decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(5),),
-        child: const Text("Confirmar", style: TextStyle(color: Colors.white, fontSize: 10),),
-      ), onTap: () async {
-        //await myShowDialog(ticket_noResolved(id: tickets.IDTickets!,), context, 400, null, ColorPalette.ticketsColor2);
-        await changeStatus(id: tickets.IDTickets!, estatus: "Cerrado");
-        setState(() {
-          listTickets.where((element) => element.IDTickets == tickets.IDTickets).first.Estatus = "Cerrado";
-          tickets.Estatus = "Cerrado";
-        });
-      },),
-      const SizedBox(height: 5,),
-      GestureDetector(child: Container(alignment: Alignment.center, height: 25, width: 90,
-        decoration: BoxDecoration(color: ColorPalette.ticketsColor10, borderRadius: BorderRadius.circular(5),),
-        child: const Text("No resuelto", style: TextStyle(color: Colors.white, fontSize: 10),),
-      ), onTap: () async {
-        await changeStatusExtra(id: tickets.IDTickets!, estatus: "En Progreso");
-        await myShowDialog(ticket_noResolved(id: tickets.IDTickets!,), context, 400, null, ColorPalette.ticketsColor2);
-        setState(() {
-          listTickets.where((element) => element.IDTickets == tickets.IDTickets).first
-              .Estatus = "En Progreso";tickets.Estatus = "En Progreso";
-        });
-      },)
-    ],
+
+  Widget buttonsConfirm(TicketsModels tickets) {
+    return Column(
+      children: [
+        GestureDetector(
+          child: Container(
+            alignment: Alignment.center,
+            height: 25,
+            width: 90,
+            decoration: BoxDecoration(
+              color: Colors.green,
+              borderRadius: BorderRadius.circular(5),
+            ),
+            child: const Text(
+              "Confirmar",
+              style: TextStyle(color: Colors.white, fontSize: 10),
+            ),
+          ),
+          onTap: () async {
+            //await myShowDialog(ticket_noResolved(id: tickets.IDTickets!,), context, 400, null, ColorPalette.ticketsColor2);
+            await changeStatus(id: tickets.IDTickets!, estatus: "Cerrado");
+            setState(() {
+              listTickets
+                  .where((element) => element.IDTickets == tickets.IDTickets)
+                  .first
+                  .Estatus = "Cerrado";
+              tickets.Estatus = "Cerrado";
+            });
+          },
+        ),
+        const SizedBox(
+          height: 5,
+        ),
+        GestureDetector(
+          child: Container(
+            alignment: Alignment.center,
+            height: 25,
+            width: 90,
+            decoration: BoxDecoration(
+              color: ColorPalette.ticketsColor10,
+              borderRadius: BorderRadius.circular(5),
+            ),
+            child: const Text(
+              "No resuelto",
+              style: TextStyle(color: Colors.white, fontSize: 10),
+            ),
+          ),
+          onTap: () async {
+            await changeStatusExtra(
+                id: tickets.IDTickets!, estatus: "En Progreso");
+            await myShowDialog(
+                ticket_noResolved(
+                  id: tickets.IDTickets!,
+                ),
+                context,
+                400,
+                null,
+                ColorPalette.ticketsColor2);
+            setState(() {
+              listTickets
+                  .where((element) => element.IDTickets == tickets.IDTickets)
+                  .first
+                  .Estatus = "En Progreso";
+              tickets.Estatus = "En Progreso";
+            });
+          },
+        )
+      ],
     );
   }
-  Future<void> changeStatus({required String id, required String estatus}) async {
+
+  Future<void> changeStatus(
+      {required String id, required String estatus}) async {
     try {
       LoadingDialogTickets.showLoadingDialogTickets(context, Texts.loadingData);
       StatusModels status = StatusModels(idTicket: id, status: estatus);
@@ -872,34 +1490,55 @@ class _TicketsLevantados extends State<TicketsLevantados> {
         await Future.delayed(const Duration(milliseconds: 500), () async {
           LoadingDialogTickets.hideLoadingDialogTickets(context);
           await Future.delayed(const Duration(milliseconds: 200), () async {
-            CustomAwesomeDialogTickets(title: Texts.updateSuccess, desc: '', btnOkOnPress: () {},
-                    btnCancelOnPress: () {}, width: size.width<500? size.width*.9:null).showSuccess(context);
+            CustomAwesomeDialogTickets(
+                    title: Texts.updateSuccess,
+                    desc: '',
+                    btnOkOnPress: () {},
+                    btnCancelOnPress: () {},
+                    width: size.width < 500 ? size.width * .9 : null)
+                .showSuccess(context);
             await Future.delayed(const Duration(milliseconds: 2550), () async {
-              if(estatus == "Cerrado"){
+              if (estatus == "Cerrado") {
                 await satisfactionTicket(id);
               }
             });
           });
         });
       } else {
-        try{
+        try {
           Vibration.vibrate(pattern: [100, 1200]);
-        }catch(e){
+        } catch (e) {
           print(e);
         }
-        CustomAwesomeDialogTickets(title: Texts.errorSavingData, desc: 'Error al guardar el ticket',
-            btnOkOnPress: () {LoadingDialogTickets.hideLoadingDialogTickets(context);},
-            btnCancelOnPress: () {LoadingDialogTickets.hideLoadingDialogTickets(context);},
-            width: size.width<500? size.width*.9:null).showError(context);
+        CustomAwesomeDialogTickets(
+                title: Texts.errorSavingData,
+                desc: 'Error al guardar el ticket',
+                btnOkOnPress: () {
+                  LoadingDialogTickets.hideLoadingDialogTickets(context);
+                },
+                btnCancelOnPress: () {
+                  LoadingDialogTickets.hideLoadingDialogTickets(context);
+                },
+                width: size.width < 500 ? size.width * .9 : null)
+            .showError(context);
       }
     } catch (e) {
-      CustomAwesomeDialogTickets(title: Texts.errorSavingData, desc: '${Texts.ticketErrorSave}}. $e',
-          btnOkOnPress: () {LoadingDialogTickets.hideLoadingDialogTickets(context);},
-          btnCancelOnPress: () {LoadingDialogTickets.hideLoadingDialogTickets(context);},
-          width: size.width<500? size.width*.9:null).showError(context);
+      CustomAwesomeDialogTickets(
+              title: Texts.errorSavingData,
+              desc: '${Texts.ticketErrorSave}}. $e',
+              btnOkOnPress: () {
+                LoadingDialogTickets.hideLoadingDialogTickets(context);
+              },
+              btnCancelOnPress: () {
+                LoadingDialogTickets.hideLoadingDialogTickets(context);
+              },
+              width: size.width < 500 ? size.width * .9 : null)
+          .showError(context);
     }
   }
-  Future<void> changeStatusExtra({required String id, required String estatus}) async {
+
+  Future<void> changeStatusExtra(
+      {required String id, required String estatus}) async {
     try {
       LoadingDialogTickets.showLoadingDialogTickets(context, Texts.loadingData);
       StatusModels status = StatusModels(idTicket: id, status: estatus);
@@ -909,50 +1548,82 @@ class _TicketsLevantados extends State<TicketsLevantados> {
         await Future.delayed(const Duration(milliseconds: 500), () async {
           LoadingDialogTickets.hideLoadingDialogTickets(context);
           await Future.delayed(const Duration(milliseconds: 200), () async {
-            CustomAwesomeDialogTickets(title: Texts.updateSuccess, desc: '', btnOkOnPress: () {},
-                    btnCancelOnPress: () {}, width: size.width<500? size.width*.9:null).showSuccess(context);
-            await Future.delayed(const Duration(milliseconds: 2550), () async {});
+            CustomAwesomeDialogTickets(
+                    title: Texts.updateSuccess,
+                    desc: '',
+                    btnOkOnPress: () {},
+                    btnCancelOnPress: () {},
+                    width: size.width < 500 ? size.width * .9 : null)
+                .showSuccess(context);
+            await Future.delayed(
+                const Duration(milliseconds: 2550), () async {});
           });
         });
       } else {
-        CustomAwesomeDialogTickets(title: Texts.errorSavingData, desc: Texts.ticketErrorSave,
-            btnOkOnPress: () {LoadingDialogTickets.hideLoadingDialogTickets(context);},
-            btnCancelOnPress: () {LoadingDialogTickets.hideLoadingDialogTickets(context);},
-            width: size.width<500? size.width*.9:null).showError(context);
+        CustomAwesomeDialogTickets(
+                title: Texts.errorSavingData,
+                desc: Texts.ticketErrorSave,
+                btnOkOnPress: () {
+                  LoadingDialogTickets.hideLoadingDialogTickets(context);
+                },
+                btnCancelOnPress: () {
+                  LoadingDialogTickets.hideLoadingDialogTickets(context);
+                },
+                width: size.width < 500 ? size.width * .9 : null)
+            .showError(context);
       }
     } catch (e) {
-      CustomAwesomeDialogTickets(title: Texts.errorSavingData, desc: '${Texts.ticketErrorSave}. $e',
-          btnOkOnPress: () {LoadingDialogTickets.hideLoadingDialogTickets(context);},
-          btnCancelOnPress: () {LoadingDialogTickets.hideLoadingDialogTickets(context);},
-          width: size.width<500? size.width*.9:null).showError(context);
+      CustomAwesomeDialogTickets(
+              title: Texts.errorSavingData,
+              desc: '${Texts.ticketErrorSave}. $e',
+              btnOkOnPress: () {
+                LoadingDialogTickets.hideLoadingDialogTickets(context);
+              },
+              btnCancelOnPress: () {
+                LoadingDialogTickets.hideLoadingDialogTickets(context);
+              },
+              width: size.width < 500 ? size.width * .9 : null)
+          .showError(context);
     }
   }
+
   Future<void> addTicket() async {
     LoadingDialogTickets.showLoadingDialogTickets(context, Texts.loadingData);
     AreaController areaController = AreaController();
     List<AreaModels> listArea = await areaController.getAreasConUsuario();
     LoadingDialogTickets.hideLoadingDialogTickets(context);
-    if(size.width < 500){
-      await Navigator.of(widget.context).push(MaterialPageRoute(builder: (context) => ticketRegistrationScreen(areas: listArea)));
-    }else{
-      await myShowDialogScale(ticketRegistrationScreen(areas: listArea), context, width: 1140,
-          background: ColorPalette.ticketsColor4);
+    if (size.width < 500) {
+      await Navigator.of(widget.context).push(MaterialPageRoute(
+          builder: (context) => ticketRegistrationScreen(areas: listArea)));
+    } else {
+      await myShowDialogScale(
+          ticketRegistrationScreen(areas: listArea), context,
+          width: 1140, background: ColorPalette.ticketsColor4);
     }
     LoadingDialogTickets.showLoadingDialogTickets(context, Texts.loadingData);
     await _getDatos();
-    Future.delayed(const Duration(milliseconds: 400),(){
+    Future.delayed(const Duration(milliseconds: 400), () {
       LoadingDialogTickets.hideLoadingDialogTickets(context);
     });
   }
+
   Future<void> editTicket(TicketsModels ticket) async {
     LoadingDialogTickets.showLoadingDialogTickets(context, Texts.loadingData);
     AreaController areaController = AreaController();
     List<AreaModels> listArea = await areaController.getAreasConUsuario();
     LoadingDialogTickets.hideLoadingDialogTickets(context);
-    if(size.width < 500){
-      Navigator.of(widget.context).push(MaterialPageRoute(builder: (context) => ticketEditScreen(areas: listArea, ticket: ticket)));
-    }else{
-      await myShowDialogScale(ticketEditScreen(areas: listArea, ticket: ticket,), context, background: ColorPalette.ticketsColor4);
+    if (size.width < 500) {
+      Navigator.of(widget.context).push(MaterialPageRoute(
+          builder: (context) =>
+              ticketEditScreen(areas: listArea, ticket: ticket)));
+    } else {
+      await myShowDialogScale(
+          ticketEditScreen(
+            areas: listArea,
+            ticket: ticket,
+          ),
+          context,
+          background: ColorPalette.ticketsColor4);
     }
   }
 
@@ -962,47 +1633,80 @@ class _TicketsLevantados extends State<TicketsLevantados> {
     List<AreaModels> listArea = await areaController.getAreasConUsuario();
 
     LoadingDialogTickets.hideLoadingDialogTickets(context);
-    await Navigator.push(widget.context,
-      MaterialPageRoute(builder: (context) => ticketResumeScreen(areas: listArea, ticket: ticket),),);
+    await Navigator.push(
+      widget.context,
+      MaterialPageRoute(
+        builder: (context) =>
+            ticketResumeScreen(areas: listArea, ticket: ticket),
+      ),
+    );
   }
+
   Future<bool> comprobarSave() {
     var completer = Completer<bool>();
-    CustomAwesomeDialogTickets(title: Texts.askSaveConfirmStatus, desc: '', btnOkOnPress: () {completer.complete(true);},
-        btnCancelOnPress: () {completer.complete(false);},
-        width: size.width<500? size.width*.9:null).showQuestion(context);
+    CustomAwesomeDialogTickets(
+            title: Texts.askSaveConfirmStatus,
+            desc: '',
+            btnOkOnPress: () {
+              completer.complete(true);
+            },
+            btnCancelOnPress: () {
+              completer.complete(false);
+            },
+            width: size.width < 500 ? size.width * .9 : null)
+        .showQuestion(context);
     return completer.future;
   }
+
   void _showImageDialog(String base64Image) {
     try {
       // Attempt to decode the image
       final image = base64Decode(base64Image);
-      showDialog(context: context,
+      showDialog(
+        context: context,
         builder: (BuildContext context) {
-          return AlertDialog(backgroundColor: ColorPalette.ticketsColor3,
+          return AlertDialog(
+            backgroundColor: ColorPalette.ticketsColor3,
             content: Container(
-              decoration: BoxDecoration(border: Border.all(width: 2,),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  width: 2,
+                ),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10), // Radio del borde
-                child: Image.memory(image, fit: BoxFit.cover,),
+                child: Image.memory(
+                  image,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
             actions: <Widget>[
-              TextButton(style: TextButton.styleFrom(primary: Colors.white),
-                onPressed: () {Navigator.of(context).pop();}, child: const Text('Cerrar'),
+              TextButton(
+                style: TextButton.styleFrom(primary: Colors.white),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Cerrar'),
               ),
             ],
           );
         },
       );
     } catch (e) {
-      showDialog(context: context,
+      showDialog(
+        context: context,
         builder: (BuildContext context) {
-          return AlertDialog(title: const Text('Error'), content: const Text('Invalid image data.'),
+          return AlertDialog(
+            title: const Text('Error'),
+            content: const Text('Invalid image data.'),
             actions: <Widget>[
-              TextButton(child: const Text('Close'),
-                onPressed: () {Navigator.of(context).pop();},
+              TextButton(
+                child: const Text('Close'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
               ),
             ],
           );
@@ -1010,24 +1714,35 @@ class _TicketsLevantados extends State<TicketsLevantados> {
       );
     }
   }
+
   Future<void> aplicarFiltro() async {
     listTicketsTemp = listTickets;
     if (searchController.text.isNotEmpty) {
-      listTicketsTemp = listTicketsTemp.where((ticket) => ticket.Titulo.toLowerCase()
+      listTicketsTemp = listTicketsTemp
+          .where((ticket) =>
+              ticket.Titulo.toLowerCase()
                   .contains(searchController.text.toLowerCase()) ||
               "${ticket.UsuarioAsignadoID} ${ticket.NombreDepartamento} ${ticket.Estatus}"
-                  .toLowerCase().contains(searchController.text.toLowerCase()) ||
+                  .toLowerCase()
+                  .contains(searchController.text.toLowerCase()) ||
               ticket.UsuarioNombre!
-                  .toLowerCase().contains(searchController.text.toLowerCase())).toList();
+                  .toLowerCase()
+                  .contains(searchController.text.toLowerCase()))
+          .toList();
     }
     if (selectedItems1.isNotEmpty) {
-      listTicketsTemp = listTicketsTemp.where((ticket) => selectedItems1.contains(ticket.Estatus)).toList();
+      listTicketsTemp = listTicketsTemp
+          .where((ticket) => selectedItems1.contains(ticket.Estatus))
+          .toList();
     }
     if (selectedItems2.isNotEmpty) {
-      listTicketsTemp = listTicketsTemp.where((ticket) => selectedItems2.contains(ticket.Prioridad)).toList();
+      listTicketsTemp = listTicketsTemp
+          .where((ticket) => selectedItems2.contains(ticket.Prioridad))
+          .toList();
     }
     setState(() {});
   }
+
   Future<void> aplicarFiltroFecha() async {
     if (startDate != null && endDate != null) {
       try {
@@ -1036,8 +1751,10 @@ class _TicketsLevantados extends State<TicketsLevantados> {
 
         final ticketViewController = TicketViewController();
         DateTime before = today.subtract(const Duration(days: 5));
-        dateInitial.text = "${before.year}-${(before.month).toString().padLeft(2, "0")}-${before.day.toString().padLeft(2, "0")} / ${today.year}-${today.month.toString().padLeft(2, "0")}-${today.day.toString().padLeft(2, "0")}";
-        listTickets = await ticketViewController.getTicketsAsignados("${startDate}", "${endDate},", idUsuario);
+        dateInitial.text =
+            "${before.year}-${(before.month).toString().padLeft(2, "0")}-${before.day.toString().padLeft(2, "0")} / ${today.year}-${today.month.toString().padLeft(2, "0")}-${today.day.toString().padLeft(2, "0")}";
+        listTickets = await ticketViewController.getTicketsAsignados(
+            "${startDate}", "${endDate},", idUsuario);
         listTicketsTemp = listTickets;
         if (listTicketsTemp.isEmpty) {
           isEmpty = true;
@@ -1057,30 +1774,54 @@ class _TicketsLevantados extends State<TicketsLevantados> {
       List<ComentaryModels> listCommentary = await _getCommentaries(idTickets);
       Future.delayed(const Duration(milliseconds: 500), () async {
         LoadingDialogTickets.hideLoadingDialogTickets(context);
-        await myShowDialog(TicketsConversationScreen(idTicket: idTickets, listCommentaries: listCommentary,
-            activeMessages: true), context, size.width * .30, null, ColorPalette.ticketsColor,);
+        await myShowDialog(
+          TicketsConversationScreen(
+              idTicket: idTickets,
+              listCommentaries: listCommentary,
+              activeMessages: true),
+          context,
+          size.width * .30,
+          null,
+          ColorPalette.ticketsColor,
+        );
         listCommentary.clear();
       });
     } catch (e) {
       print(e);
     }
   }
+
   Future<void> showConversation2(String idTicket) async {
-    await myShowDialog(TicketsConversationScreen(idTicket: idTicket, listCommentaries: [], activeMessages: true,),
-      context, size.width * .30, null, ColorPalette.ticketsColor,);
+    await myShowDialog(
+      TicketsConversationScreen(
+        idTicket: idTicket,
+        listCommentaries: [],
+        activeMessages: true,
+      ),
+      context,
+      size.width * .30,
+      null,
+      ColorPalette.ticketsColor,
+    );
   }
+
   Future<void> showConversationMobile(String idTickets) async {
     try {
       LoadingDialogTickets.showLoadingDialogTickets(context, Texts.loadingData);
       List<ComentaryModels> listCommentary = await _getCommentaries(idTickets);
       LoadingDialogTickets.hideLoadingDialogTickets(context);
       await Navigator.of(widget.context).push(MaterialPageRoute(
-          builder: (context) => TicketsConversationScreen(idTicket: idTickets, listCommentaries: listCommentary,activeMessages: true,)));
+          builder: (context) => TicketsConversationScreen(
+                idTicket: idTickets,
+                listCommentaries: listCommentary,
+                activeMessages: true,
+              )));
       listCommentary.clear();
     } catch (e) {
       LoadingDialogTickets.hideLoadingDialogTickets(context);
     }
   }
+
   Future<List<ComentaryModels>> _getCommentaries(String idTicket) async {
     try {
       List<ComentaryModels> listCommentaries = [];
@@ -1110,11 +1851,22 @@ class _TicketsLevantados extends State<TicketsLevantados> {
       return [];
     }
   }
+
   Future<void> satisfactionTicket(String id) async {
-    if(size.width > 500) {
-      await myShowDialog(SatisfactionTickets(id: id,), context, 400, null, ColorPalette.ticketsColor2);
-    }else{
-      await Navigator.of(widget.context).push(MaterialPageRoute(builder: (context) => SatisfactionTickets(id: id,)));
+    if (size.width > 500) {
+      await myShowDialog(
+          SatisfactionTickets(
+            id: id,
+          ),
+          context,
+          400,
+          null,
+          ColorPalette.ticketsColor2);
+    } else {
+      await Navigator.of(widget.context).push(MaterialPageRoute(
+          builder: (context) => SatisfactionTickets(
+                id: id,
+              )));
     }
   }
 
@@ -1123,10 +1875,14 @@ class _TicketsLevantados extends State<TicketsLevantados> {
       String idUsuario = await userPreferences.getUsuarioID();
       DateTime before = today.subtract(const Duration(days: 5));
       DateTime after = today.add(const Duration(days: 1));
-      dateInitial.text = "${before.year}-${(before.month).toString().padLeft(2, "0")}-${before.day.toString().padLeft(2, "0")} / ${today.year}-${today.month.toString().padLeft(2, "0")}-${today.day.toString().padLeft(2, "0")}";
+      dateInitial.text =
+          "${before.year}-${(before.month).toString().padLeft(2, "0")}-${before.day.toString().padLeft(2, "0")} / ${today.year}-${today.month.toString().padLeft(2, "0")}-${today.day.toString().padLeft(2, "0")}";
       listTickets = await ticketViewController.getTicketsAsignados(
-          "${before.year}-${before.month}-${before.day}", "${after.year}-${after.month}-${after.day},", idUsuario);
-      listTickets.sort((a, b) => b.FechaCreacion!.compareTo(a.FechaCreacion!)); // Ordenar por fecha de creación
+          "${before.year}-${before.month}-${before.day}",
+          "${after.year}-${after.month}-${after.day},",
+          idUsuario);
+      listTickets.sort((a, b) => b.FechaCreacion!
+          .compareTo(a.FechaCreacion!)); // Ordenar por fecha de creación
       listTicketsTemp = listTickets;
       if (listTicketsTemp.isEmpty) {
         isEmpty = true;
@@ -1147,6 +1903,7 @@ class _TicketsLevantados extends State<TicketsLevantados> {
       });
     }
   }
+
   Future<List<TicketsModels>> _getDatos2() async {
     try {
       return listTicketsTemp;
@@ -1155,17 +1912,21 @@ class _TicketsLevantados extends State<TicketsLevantados> {
       return [];
     }
   }
+
   Future<SatisfactionModel?> getQualification(String idTicket) async {
     try {
       SatisfactionModel? satisfactionModel = SatisfactionModel();
-      final SatisfactionController satisfactionController = SatisfactionController();
-      satisfactionModel = await satisfactionController.getSatisfaction(idTicket);
+      final SatisfactionController satisfactionController =
+          SatisfactionController();
+      satisfactionModel =
+          await satisfactionController.getSatisfaction(idTicket);
       return satisfactionModel;
     } catch (e) {
       print('Error al obtener calificación: $e');
     }
     return null;
   }
+
   void _gettingData() {
     _timer = Timer.periodic(const Duration(minutes: 2), (timer) {
       _getDatos();

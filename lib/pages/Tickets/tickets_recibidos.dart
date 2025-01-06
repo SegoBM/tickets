@@ -33,6 +33,7 @@ import '../../shared/utils/user_preferences.dart';
 import '../../shared/widgets/Snackbars/customSnackBar.dart';
 import '../../shared/widgets/buttons/custom_button.dart';
 import '../../shared/widgets/buttons/custom_dropdown_button.dart';
+import '../../shared/widgets/progressBar/progressBar.dart';
 import '../../shared/widgets/textfields/my_textfield_icon.dart';
 import 'package:fading_edge_scrollview/fading_edge_scrollview.dart';
 import 'CustomeAwesomeDialogTickets.dart';
@@ -423,6 +424,8 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
   }
 
   Widget card(TicketsModels tickets) {
+    double progreso = calcularProgreso(tickets);
+
     DateTime ticketDate = DateTime.parse(tickets.FechaCreacion!).toLocal();
     DateTime now = DateTime.now();
     bool isCreatedToday = (ticketDate.year == now.year && ticketDate.month == now.month && ticketDate.day == now.day);
@@ -554,33 +557,65 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
                 )
 
               ),
-              Expanded(flex: 1,
-                  child: Row(mainAxisAlignment: MainAxisAlignment.end,
+              Expanded(
+                  flex: 1,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Column(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Column(children: [
-                            if (size.width > 1400) ...[
-                              const SizedBox(width: 6,),
-                              Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                                isCreatedToday ? buttons(tickets)[3] : Container(),
-                                const SizedBox(width: 5),
-                                buttons(tickets)[0],
-                                const SizedBox(width: 5),
-                                buttons(tickets)[1],
-                              ],),
+                            if (size.width > 1100) ...[
+                              const SizedBox(
+                                width: 6,
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  buttons(tickets)[1],
+                                ],
+                              ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(2.0),
+                                child: ProgressBar(
+                                  progreso: progreso,
+                                  onTap: (status) async {
+                                    bool result = await comprobarSave();
+                                    if (result) {
+                                      await changeStatus(id: tickets
+                                          .IDTickets!, estatus: status, oldStatus: tickets
+                                          .Estatus!);
+                                   await  _getDatos();
+                                    }
+                                  },
+                                ),
+                              ),
                             ] else ...[
-                              SizedBox(width: size.width/(4+(1000/size.width)*1.5),
-                                child: Wrap(spacing: 3, alignment: WrapAlignment.end, runSpacing: 3,
-                                  children: [
-                                isCreatedToday ? buttons(tickets)[3] : Container(),
-                                buttons(tickets)[0],
-                                buttons(tickets)[1],
-                              ],),)
-                            ] ,
+                              Column(
+                                children: [
+                                  buttons(tickets)[0],
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  buttons(tickets)[1],
+                                  const SizedBox(
+                                    height: 8,
+                                  ),
+                                ],
+                              ),
+                            ],
                           ]),
-                          Column(mainAxisAlignment: MainAxisAlignment.center,
-                            children: [Center(child: _customButtonShowConversation(tickets.IDTickets!)),],
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Center(
+                                  child: _customButtonShowConversation(
+                                      tickets.IDTickets!)),
+                            ],
                           ),
                         ],
                       ),
@@ -673,6 +708,7 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
       ),
     ),);
   }
+
   Future<void> ticketResume(TicketsModels ticket) async {
     LoadingDialogTickets.showLoadingDialogTickets(context, Texts.loadingData);
     AreaController areaController = AreaController();
@@ -680,6 +716,20 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
     LoadingDialogTickets.hideLoadingDialogTickets(context);
     await Navigator.push(widget.context,
       MaterialPageRoute(builder: (context) => ticketResumeScreen(areas: listArea, ticket: ticket),),);
+  }
+  double calcularProgreso(TicketsModels ticket) {
+    switch (ticket.Estatus) {
+      case 'Abierto':
+        return 0.25;
+      case 'En Progreso':
+        return 0.5;
+      case 'Resuelto':
+        return 0.75;
+      case 'Cerrado':
+        return 1.0;
+      default:
+        return 0.0;
+    }
   }
 
   List<Widget> buttons(TicketsModels tickets, {double width = 90}) {
