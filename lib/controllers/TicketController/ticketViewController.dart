@@ -57,10 +57,7 @@ class TicketViewController with ChangeNotifier {
     final url1 = Uri.http(urlapi, '/api/Tickets/TicketsRecibidos', {"startDate": startDate, "endDate": endDate, "idUsuario": idUsuario, "idDepartmento": idDepartamento});
     const int maxAttempts = 3; // Número máximo de intentos
     int attempts = 0;
-    print(startDate);
-print(endDate);
-print(idUsuario);
-print(idDepartamento);
+
     while (attempts < maxAttempts) {
       print('Intento $attempts');
       try {

@@ -5,6 +5,8 @@ import 'package:custom_date_range_picker/custom_date_range_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:tickets/models/TicketsModels/Comentario.dart';
 import 'package:tickets/models/TicketsModels/ticketsReportModel.dart';
+import 'package:tickets/pages/Tickets/ticketEditScreen.dart';
+import 'package:tickets/pages/Tickets/ticketReasignScreen.dart';
 import 'package:tickets/pages/Tickets/ticketResumeScreen.dart';
 import 'package:tickets/pages/Tickets/tickets_conversation.dart';
 import 'package:tickets/shared/actions/my_show_dialog.dart';
@@ -30,6 +32,7 @@ import '../../shared/widgets/PopUpMenu/PopupMenuTickets.dart';
 import '../../shared/widgets/Snackbars/customSnackBar.dart';
 import '../../shared/widgets/buttons/custom_button.dart';
 import '../../shared/widgets/buttons/custom_dropdown_button.dart';
+import '../../shared/widgets/progressBar/progressBar.dart';
 import '../../shared/widgets/textfields/my_textfield_icon.dart';
 import 'package:fading_edge_scrollview/fading_edge_scrollview.dart';
 import 'CustomeAwesomeDialogTickets.dart';
@@ -746,6 +749,11 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
                                   fontSize: 13 * (size.width / 350),
                                   fontWeight: FontWeight.bold),
                             ),
+
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            buttons(tickets)[3],
                           ],
                         ),
                         Column(
@@ -814,6 +822,7 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
   }
 
   Widget card(TicketsModels tickets) {
+    double progreso = calcularProgreso(tickets);
     return SizedBox(
       height: max(153 * (size.width / 1200), 185.0),
       child: Card(
@@ -878,10 +887,22 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
                       ),
                     ),
                     const SizedBox(
-                      height: 8,
+                      height: 6,
                     ),
                     Text(
-                      "Usuario: ${tickets.UsuarioNombre}",
+                      "Nombre usuario reportante: ${tickets.UsuarioNombre}",
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          color: Colors.white.withOpacity(0.8),
+                          fontSize: 13 * (size.width / 1400),
+                          fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(
+                      height: 6,
+                    ),
+                    Text(
+                      "Nombre usuario asignado: ${tickets.NombreUsuarioAsignado}",
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                           color: Colors.white.withOpacity(0.8),
                           fontSize: 13 * (size.width / 1400),
@@ -897,6 +918,10 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
                           fontSize: 13 * (size.width / 1400),
                           fontWeight: FontWeight.bold),
                     ),
+                    const SizedBox(
+                      height: 4,
+                    ),
+                    buttons(tickets)[5],
                   ],
                 ),
               ),
@@ -929,33 +954,8 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
                               ),
                             ),
                           ),
-                          Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    "Fecha de creación : ${tickets.FechaCreacion?.split("T")[0]} ${tickets.FechaCreacion?.split("T")[1].split(".")[0]}",
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.5),
-                                      fontSize:
-                                          min(17 * (size.width / 1200), 12.0),
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: tickets.FechaFinalizacion == null
-                                      ? Container() // No muestra nada si FechaFinalizacion es nulo
-                                      : Text(
-                                          "Fecha de finalización : ${tickets.FechaFinalizacion?.split("T")[0] ?? ""} ${tickets.FechaFinalizacion?.split("T")[1].split(".")[0] ?? ""}",
-                                          style: TextStyle(
-                                              color:
-                                                  Colors.white.withOpacity(0.5),
-                                              fontSize: min(
-                                                  17 * (size.width / 1200),
-                                                  12.0)),
-                                        ),
-                                ),
-                              ]),
+
+                          buildDateInfo(tickets),
                           const SizedBox(
                             height: 15,
                           ),
@@ -1038,30 +1038,46 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Column(children: [
-                            if (size.width > 1240) ...[
+                            if (size.width > 1100) ...[
                               const SizedBox(
                                 width: 6,
                               ),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  buttons(tickets)[0],
-                                  const SizedBox(width: 10),
                                   buttons(tickets)[2],
                                 ],
                               ),
                               const SizedBox(
-                                width: 10,
-                              )
+                                height: 10,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(2.0),
+                                child: ProgressBar(
+                                  progreso: progreso,
+                                  onTap: (status) {
+                                    print('Status tapped: $status');
+                                  },
+                                  width: 212,
+                                ),
+                              ),
                             ] else ...[
                               Column(
                                 children: [
-                                  buttons(tickets)[0],
+                                  buttons(tickets)[2],
                                   const SizedBox(
                                     height: 10,
                                   ),
-                                  buttons(tickets)[2],
-                                  const SizedBox(
+                                  Padding(
+                                    padding: const EdgeInsets.all(2.0),
+                                    child: ProgressBar(
+                                      progreso: progreso,
+                                      onTap: (status) {
+                                        print('Status tapped: $status');
+                                      },
+                                      width:157.5,
+                                    ),
+                                  ),       const SizedBox(
                                     height: 8,
                                   ),
                                 ],
@@ -1085,6 +1101,98 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
         ),
       ),
     );
+  }
+
+  Widget buildDateInfo(TicketsModels tickets) {
+    return size.width > 1100
+        ? Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Text(
+            "Fecha de creación : ${tickets.FechaCreacion?.split("T")[0]} ${tickets.FechaCreacion?.split("T")[1].split(".")[0]}",
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.5),
+              fontSize: min(17 * (size.width / 1200), 12.0),
+            ),
+          ),
+        ),
+        Expanded(
+          child: tickets.FechaFinalizacion == null
+              ? tickets.FechaAtencion == null
+              ? SizedBox()
+              : Text(
+              "Fecha de Atencion : ${tickets.FechaAtencion?.split("T")[0] ?? ""} ${tickets.FechaAtencion?.split("T")[1].split(".")[0] ?? ""}",
+              style: TextStyle(
+                  color:
+                  Colors.white.withOpacity(0.5),
+                  fontSize: min(
+                      17 * (size.width / 1200),
+                      12.0))) // No muestra nada si FechaFinalizacion es nulo
+              : Text(
+            "Fecha de finalización : ${tickets.FechaFinalizacion?.split("T")[0] ?? ""} ${tickets.FechaFinalizacion?.split("T")[1].split(".")[0] ?? ""}",
+            style: TextStyle(
+                color: Colors.white.withOpacity(0.5),
+                fontSize: min(17 * (size.width / 1200), 12.0)),
+          ),
+        ),
+      ],
+    )
+        : Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Fecha de creación      : ${tickets.FechaCreacion?.split("T")[0]} ${tickets.FechaCreacion?.split("T")[1].split(".")[0]}",
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.5),
+            fontSize: min(17 * (size.width / 1200), 12.0),
+          ),
+        ),
+        tickets.FechaFinalizacion == null
+            ? tickets.FechaAtencion == null
+            ? SizedBox()
+            : Text(
+            "Fecha de Atencion : ${tickets.FechaAtencion?.split("T")[0] ?? ""} ${tickets.FechaAtencion?.split("T")[1].split(".")[0] ?? ""}",
+            style: TextStyle(
+                color:
+                Colors.white.withOpacity(0.5),
+                fontSize: min(
+                    17 * (size.width / 1200),
+                    12.0))) // No muestra nada si FechaFinalizacion es nulo
+            : Text(
+          "Fecha de finalización : ${tickets.FechaFinalizacion?.split("T")[0] ?? ""} ${tickets.FechaFinalizacion?.split("T")[1].split(".")[0] ?? ""}",
+          style: TextStyle(
+              color: Colors.white.withOpacity(0.5),
+              fontSize: min(17 * (size.width / 1200), 12.0)),
+        ),
+      ],
+    );
+  }
+
+  Widget editButton(TicketsModels tickets) {
+    return tickets.Estatus != "Cerrado"
+        ? Container(
+        alignment: Alignment.center,
+        height: 30,
+        width: 120,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          color: ColorPalette.ticketsColor2,
+        ),
+        child: TextButton(
+            onPressed: () async {
+              await editTicket(tickets);
+              await _getDatos();
+              setState(() {});
+            },
+            child: const Text(
+              "Reasignar ticket",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+              ),
+            )))
+        : Container();
   }
 
   Widget cardMobile2(TicketsModels tickets) {
@@ -1242,6 +1350,22 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
       ),
     );
   }
+
+  double calcularProgreso(TicketsModels ticket) {
+    switch (ticket.Estatus) {
+      case 'Abierto':
+        return 0.25;
+      case 'En Progreso':
+        return 0.5;
+      case 'Resuelto':
+        return 0.75;
+      case 'Cerrado':
+        return 1.0;
+      default:
+        return 0.0;
+    }
+  }
+
 
   Color getColor(TicketsModels tickets) {
     Duration time =
@@ -1521,6 +1645,8 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
                 size: 20,
               ),
             ),
+      editButton(tickets)
+
     ];
   }
 
@@ -1875,6 +2001,27 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
       return [];
     }
   }
+
+  Future<void> editTicket(TicketsModels ticket) async {
+    LoadingDialogTickets.showLoadingDialogTickets(context, Texts.loadingData);
+    AreaController areaController = AreaController();
+    List<AreaModels> listArea = await areaController.getAreasConUsuario();
+    LoadingDialogTickets.hideLoadingDialogTickets(context);
+    if (size.width < 500) {
+      Navigator.of(widget.context).push(MaterialPageRoute(
+          builder: (context) =>
+              ticketReasignScreen(areas: listArea, ticket: ticket)));
+    } else {
+      await myShowDialogScale(
+          ticketReasignScreen(
+            areas: listArea,
+            ticket: ticket,
+          ),
+          context,
+          background: ColorPalette.ticketsColor4);
+    }
+  }
+
 
   getQualification(String idTicket) async {
     try {

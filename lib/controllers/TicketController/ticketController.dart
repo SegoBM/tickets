@@ -33,7 +33,7 @@ class TicketController with ChangeNotifier {
             "etiqueta" : '${ticket.Etiqueta}',
             "imagen1" : '${ticket.Imagen1}',
             "imagen2" : '${ticket.Imagen2}',
-            "imagen3" : '${ticket.Imagen3}'
+            "imagen3" : '${ticket.Imagen3}',
           }),
           headers: {
             'Content-Type': 'application/json',

@@ -573,7 +573,7 @@ class _TicketsLevantados extends State<TicketsLevantados> {
   Widget card(TicketsModels tickets) {
     double progreso = calcularProgreso(tickets);
     return SizedBox(
-      height: max(153 * (size.width / 1200), 178.0),
+      height: max(153 * (size.width / 1200), 188.0),
       child: Card(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10.0),
@@ -583,7 +583,7 @@ class _TicketsLevantados extends State<TicketsLevantados> {
         child: Padding(
           padding: const EdgeInsets.all(5.0),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start, // Alinea el contenido en la parte superior
             children: [
               Expanded(
                 flex: 1,
@@ -604,23 +604,23 @@ class _TicketsLevantados extends State<TicketsLevantados> {
                         children: [
                           Expanded(
                               child: ListView(
-                            padding: const EdgeInsets.only(top: 5.0),
-                            scrollDirection: Axis.horizontal,
-                            children: [
-                              Tooltip(
-                                message: "Título: ${tickets.Titulo}",
-                                waitDuration: const Duration(milliseconds: 800),
-                                child: Text(
-                                  tickets.Titulo,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              )
-                            ],
-                          )),
+                                padding: const EdgeInsets.only(top: 5.0),
+                                scrollDirection: Axis.horizontal,
+                                children: [
+                                  Tooltip(
+                                    message: "Título: ${tickets.Titulo}",
+                                    waitDuration: const Duration(milliseconds: 800),
+                                    child: Text(
+                                      tickets.Titulo,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              )),
                           if (tickets.Estatus == "Cerrado") ...[
                             const SizedBox(
                               width: 15,
@@ -642,10 +642,21 @@ class _TicketsLevantados extends State<TicketsLevantados> {
                       ),
                     ),
                     const SizedBox(
-                      height: 8,
+                      height: 4,
                     ),
                     Text(
-                      "Usuario: ${tickets.NombreUsuarioAsignado ?? tickets.NombreDepartamento}",
+                      "Nombre usuario reportante: ${tickets.UsuarioNombre}",
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          color: Colors.white.withOpacity(0.8),
+                          fontSize: 13 * (size.width / 1400),
+                          fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    Text(
+                      "Nombre usuario asignado: ${tickets.NombreUsuarioAsignado}",
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                           color: Colors.white.withOpacity(0.8),
@@ -670,192 +681,175 @@ class _TicketsLevantados extends State<TicketsLevantados> {
                 ),
               ),
               Expanded(
-                  flex: 2,
-                  child: SingleChildScrollView(
-                    controller: ScrollController(),
-                    scrollDirection: Axis.vertical,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Container(
-                          alignment: Alignment.centerLeft,
-                          child: Container(
-                            width: 700,
-                            padding: const EdgeInsets.all(10.0),
-                            decoration: BoxDecoration(
-                              color: ColorPalette.ticketsColor6,
-                              borderRadius: BorderRadius.circular(4.0),
-                            ),
-                            child: Text(
-                              "Descripción:  ${tickets.Descripcion}",
-                              maxLines: 3,
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w800),
-                            ),
+                flex: 2,
+                child: SingleChildScrollView(
+                  controller: ScrollController(),
+                  scrollDirection: Axis.vertical,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        child: Container(
+                          width: 700,
+                          padding: const EdgeInsets.all(10.0),
+                          decoration: BoxDecoration(
+                            color: ColorPalette.ticketsColor6,
+                            borderRadius: BorderRadius.circular(4.0),
+                          ),
+                          child: Text(
+                            "Descripción:  ${tickets.Descripcion}",
+                            maxLines: 3,
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800),
                           ),
                         ),
-                        Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  "Fecha de creación : ${tickets.FechaCreacion?.split("T")[0]} ${tickets.FechaCreacion?.split("T")[1].split(".")[0]}",
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(0.5),
-                                    fontSize:
-                                        min(17 * (size.width / 1200), 12.0),
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                child: tickets.FechaFinalizacion == null
-                                    ? Container() // No muestra nada si FechaFinalizacion es nulo
-                                    : Text(
-                                        "Fecha de finalización : ${tickets.FechaFinalizacion?.split("T")[0] ?? ""} ${tickets.FechaFinalizacion?.split("T")[1].split(".")[0] ?? ""}",
-                                        style: TextStyle(
-                                            color:
-                                                Colors.white.withOpacity(0.5),
-                                            fontSize: min(
-                                                17 * (size.width / 1200),
-                                                12.0)),
-                                      ),
-                              ),
-                            ]),
+                      ),
+                        buildDateInfo(tickets),
                         const SizedBox(
-                          height: 15,
-                        ),
-                        tickets.Imagen1!.isEmpty &&
-                                tickets.Imagen2!.isEmpty &&
-                                tickets.Imagen3!.isEmpty
-                            ? SizedBox(
-                                height: 90,
-                              )
-                            : const Text(
-                                "Archivos adjuntos:",
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold),
+                        height: 6,
+                      ),
+                      tickets.Imagen1!.isEmpty &&
+                          tickets.Imagen2!.isEmpty &&
+                          tickets.Imagen3!.isEmpty
+                          ? SizedBox(
+                        height: 90,
+                      )
+                          : const Text(
+                        "Archivos adjuntos:",
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      Row(
+                        children: [
+                          if (tickets.Imagen1 != null &&
+                              tickets.Imagen1!.isNotEmpty) ...[
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: MouseRegion(
+                                cursor: SystemMouseCursors.click,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    _showImageDialog(tickets.Imagen1!);
+                                  },
+                                  child: const Icon(Icons.insert_drive_file,
+                                      color: Colors.white), // Icono de archivo
+                                ),
                               ),
-                        Row(
+                            ),
+                          ],
+                          if (tickets.Imagen2 != null &&
+                              tickets.Imagen2!.isNotEmpty) ...[
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: MouseRegion(
+                                cursor: SystemMouseCursors.click,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    _showImageDialog(tickets.Imagen2!);
+                                  },
+                                  child: const Icon(Icons.insert_drive_file,
+                                      color: Colors.white), // Icono de archivo
+                                ),
+                              ),
+                            ),
+                          ],
+                          if (tickets.Imagen3 != null &&
+                              tickets.Imagen3!.isNotEmpty) ...[
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: MouseRegion(
+                                cursor: SystemMouseCursors.click,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    _showImageDialog(tickets.Imagen3!);
+                                  },
+                                  child: const Icon(Icons.insert_drive_file,
+                                      color: Colors.white), // Icono de archivo
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(children: [
+                          if (size.width > 1100) ...[
+                            const SizedBox(
+                              width: 6,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                buttons(tickets)[1], // Botón de editar
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(2.0),
+                              child: ProgressBar(
+                                progreso: progreso,
+                                onTap: (status) {
+                                  print('Status tapped: $status');
+                                },
+                                width: 212,
+                              ),
+                            ),
+                          ] else ...[
+                            Column(
+                              children: [
+                                buttons(tickets)[1], // Botón de editar
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: ProgressBar(
+                                    progreso: progreso,
+                                    onTap: (status) {
+                                      print('Status tapped: $status');
+                                    },
+                                    width:157.5,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 8,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ]),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            if (tickets.Imagen1 != null &&
-                                tickets.Imagen1!.isNotEmpty) ...[
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: MouseRegion(
-                                  cursor: SystemMouseCursors.click,
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      _showImageDialog(tickets.Imagen1!);
-                                    },
-                                    child: const Icon(Icons.insert_drive_file,
-                                        color:
-                                            Colors.white), // Icono de archivo
-                                  ),
-                                ),
-                              ),
-                            ],
-                            if (tickets.Imagen2 != null &&
-                                tickets.Imagen2!.isNotEmpty) ...[
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: MouseRegion(
-                                  cursor: SystemMouseCursors.click,
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      _showImageDialog(tickets.Imagen2!);
-                                    },
-                                    child: const Icon(Icons.insert_drive_file,
-                                        color:
-                                            Colors.white), // Icono de archivo
-                                  ),
-                                ),
-                              ),
-                            ],
-                            if (tickets.Imagen3 != null &&
-                                tickets.Imagen3!.isNotEmpty) ...[
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: MouseRegion(
-                                  cursor: SystemMouseCursors.click,
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      _showImageDialog(tickets.Imagen3!);
-                                    },
-                                    child: const Icon(Icons.insert_drive_file,
-                                        color:
-                                            Colors.white), // Icono de archivo
-                                  ),
-                                ),
-                              ),
-                            ],
+                            Center(
+                                child: _customButtonShowConversation(
+                                    tickets.IDTickets!)),
                           ],
                         ),
                       ],
                     ),
-                  )),
-              Expanded(
-                  flex: 1,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(children: [
-                            if (size.width > 1100) ...[
-                              const SizedBox(
-                                width: 6,
-                              ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  buttons(tickets)[1],
-                                ],
-                              ),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(2.0),
-                                    child: ProgressBar(
-                                    progreso: progreso,
-                                    onTap: (status) {
-                                    print('Status tapped: $status');
-                                  },
-                                ),
-                              ),
-                            ] else ...[
-                              Column(
-                                children: [
-                                  buttons(tickets)[0],
-                                  const SizedBox(
-                                    height: 10,
-                                  ),
-                                  buttons(tickets)[1],
-                                  const SizedBox(
-                                    height: 8,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ]),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Center(
-                                  child: _customButtonShowConversation(
-                                      tickets.IDTickets!)),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ))
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -1020,6 +1014,74 @@ class _TicketsLevantados extends State<TicketsLevantados> {
       ),
     );
   }
+
+
+  Widget buildDateInfo(TicketsModels tickets) {
+    return size.width > 1100
+        ? Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Text(
+            "Fecha de creación : ${tickets.FechaCreacion?.split("T")[0]} ${tickets.FechaCreacion?.split("T")[1].split(".")[0]}",
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.5),
+              fontSize: min(17 * (size.width / 1200), 12.0),
+            ),
+          ),
+        ),
+        Expanded(
+          child: tickets.FechaFinalizacion == null
+              ? tickets.FechaAtencion == null
+              ? SizedBox()
+              : Text(
+              "Fecha de Atencion : ${tickets.FechaAtencion?.split("T")[0] ?? ""} ${tickets.FechaAtencion?.split("T")[1].split(".")[0] ?? ""}",
+              style: TextStyle(
+                  color:
+                  Colors.white.withOpacity(0.5),
+                  fontSize: min(
+                      17 * (size.width / 1200),
+                      12.0))) // No muestra nada si FechaFinalizacion es nulo
+              : Text(
+            "Fecha de finalización : ${tickets.FechaFinalizacion?.split("T")[0] ?? ""} ${tickets.FechaFinalizacion?.split("T")[1].split(".")[0] ?? ""}",
+            style: TextStyle(
+                color: Colors.white.withOpacity(0.5),
+                fontSize: min(17 * (size.width / 1200), 12.0)),
+          ),
+        ),
+      ],
+    )
+        : Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Fecha de creación      : ${tickets.FechaCreacion?.split("T")[0]} ${tickets.FechaCreacion?.split("T")[1].split(".")[0]}",
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.5),
+            fontSize: min(17 * (size.width / 1200), 12.0),
+          ),
+        ),
+        tickets.FechaFinalizacion == null
+            ? tickets.FechaAtencion == null
+            ? SizedBox()
+            : Text(
+            "Fecha de Atencion : ${tickets.FechaAtencion?.split("T")[0] ?? ""} ${tickets.FechaAtencion?.split("T")[1].split(".")[0] ?? ""}",
+            style: TextStyle(
+                color:
+                Colors.white.withOpacity(0.5),
+                fontSize: min(
+                    17 * (size.width / 1200),
+                    12.0))) // No muestra nada si FechaFinalizacion es nulo
+            : Text(
+          "Fecha de finalización : ${tickets.FechaFinalizacion?.split("T")[0] ?? ""} ${tickets.FechaFinalizacion?.split("T")[1].split(".")[0] ?? ""}",
+          style: TextStyle(
+              color: Colors.white.withOpacity(0.5),
+              fontSize: min(17 * (size.width / 1200), 12.0)),
+        ),
+      ],
+    );
+  }
+
 
   double calcularProgreso(TicketsModels ticket) {
     switch (ticket.Estatus) {
