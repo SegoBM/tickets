@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tickets/config/behavior/myScrollBehavior.dart';
 import 'package:tickets/config/theme/app_theme.dart';
 import 'package:tickets/pages/Tickets/tickets_home.dart';
@@ -7,6 +8,8 @@ import 'package:tickets/pages/splash_screen.dart';
 import 'package:flutter/services.dart';
 import 'package:window_manager/window_manager.dart';
 import 'dart:io';
+
+import 'bloc/AppProviders.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,18 +62,20 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      themeMode: _themeMode,
-      theme: _themeData,
-      darkTheme: GlobalThemData.darkThemeData,
-      scrollBehavior: MyCustomScrollBehavior(),
-      initialRoute: 'splashScreen2',
-      routes: {
-        SplashScreen2.id: (_) => const SplashScreen2(),
-        LoginPage.id: (_) => const LoginPage(),
-        TicketHomeScreen.id: (_) => const TicketHomeScreen(),
-      },
+    return MultiBlocProvider(providers: AppProviders.getProviders(),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        themeMode: _themeMode,
+        theme: _themeData,
+        darkTheme: GlobalThemData.darkThemeData,
+        scrollBehavior: MyCustomScrollBehavior(),
+        initialRoute: 'splashScreen2',
+        routes: {
+          SplashScreen2.id: (_) => const SplashScreen2(),
+          LoginPage.id: (_) => const LoginPage(),
+          TicketHomeScreen.id: (_) => const TicketHomeScreen(),
+        },
+      ),
     );
   }
 

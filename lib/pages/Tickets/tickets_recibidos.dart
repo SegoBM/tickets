@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:custom_date_range_picker/custom_date_range_picker.dart';
 import 'package:tickets/controllers/TicketController/AttentionController.dart';
@@ -16,6 +17,7 @@ import 'package:tickets/shared/utils/icon_library.dart';
 import 'package:tickets/shared/widgets/PopUpMenu/PopupMenuTickets.dart';
 import 'package:tickets/shared/widgets/appBar/my_appBar.dart';
 import 'package:shimmer/shimmer.dart';
+import '../../bloc/Tickets/tickets_bloc.dart';
 import '../../controllers/ConfigControllers/areaController.dart';
 import '../../controllers/TicketController/SatisfactionController.dart';
 import '../../controllers/TicketController/StatusController.dart';
@@ -28,12 +30,14 @@ import '../../models/TicketsModels/status.dart';
 import '../../models/TicketsModels/ticket.dart';
 import '../../models/TicketsModels/ticketsReportModel.dart';
 import '../../shared/actions/handleException.dart';
+import '../../shared/actions/key_raw_listener.dart';
 import '../../shared/pdf/pw_pdf/generate_material_report.dart';
 import '../../shared/utils/texts.dart';
 import '../../shared/utils/user_preferences.dart';
 import '../../shared/widgets/Snackbars/customSnackBar.dart';
 import '../../shared/widgets/buttons/custom_button.dart';
 import '../../shared/widgets/buttons/custom_dropdown_button.dart';
+import '../../shared/widgets/error/customNoData.dart';
 import '../../shared/widgets/progressBar/progressBar.dart';
 import '../../shared/widgets/textfields/my_textfield_icon.dart';
 import 'package:fading_edge_scrollview/fading_edge_scrollview.dart';
@@ -88,29 +92,18 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
   String? idPuesto;
   String? idUsuario;
   String? department;
+  final _key = GlobalKey();
+
   @override
   void initState() {
     super.initState();
     before = today.subtract(const Duration(days: 5));
     after = today.add(const Duration(days: 1));
+    context.read<TicketsBloc>().add(TicketsFetched());
 
-    _getDatos();
     _gettingData();
-    const timeLimit = Duration(seconds: 30);
     player = AudioPlayer();
     player.setReleaseMode(ReleaseMode.stop);
-
-    Timer(timeLimit, () {
-      if (listTickets.isEmpty) {
-        if (!isEmpty) {
-          setState(() {
-            _isLoading = false;
-          });
-        }
-      } else {
-        _isLoading = false;
-      }
-    });
   }
 
   @override
@@ -124,7 +117,62 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
   Widget build(BuildContext context) {
     size = MediaQuery.of(context).size;
     theme = Theme.of(context);
-    return size.width > 550 ? _desktopBody(context) : _mobileBody(context);
+    return PressedKeyListener(
+        keyActions: <LogicalKeyboardKey, Function()>{
+          LogicalKeyboardKey.escape: () async {
+            Navigator.of(context).pushNamed('dashboardScreen');
+          },
+        },
+        Gkey: _key,
+        child: Scaffold(
+          backgroundColor: ColorPalette.ticketsTextSelectedColor,
+          appBar: size.width > 600
+              ? MyCustomAppBarDesktop(
+                  title: "Recibidos",
+                  context: context,
+                  textColor: Colors.white,
+                  backButton: false,
+                  color: ColorPalette.ticketsColor,
+                  ticketsFlag: false,
+                  backButtonWidget: TextButton.icon(
+                    icon: const Icon(IconLibrary.iconBack, color: Colors.white),
+                    label: const Text(
+                      Texts.ticketExit,
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.transparent,
+                    ),
+                    onPressed: () {
+                      Navigator.of(widget.context).pop();
+                    },
+                  ),
+                )
+              : null,
+          body: BlocConsumer<TicketsBloc, TicketsState>(
+            listener: (context, state) {
+              if (state is TicketsFailure) {
+                CustomSnackBar.showErrorSnackBar(
+                    context, Texts.errorGettingData);
+              }
+              if (state is TicketsSuccess) {
+                listTickets = state.tickets;
+                listTicketsTemp = listTickets;
+                listTicketsTempReport = listTickets;
+              }
+            },
+            builder: (context, state) {
+              return SingleChildScrollView(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                  child: size.width > 600 ? body(state) : bodyMobile(),
+                ),
+              );
+            },
+          ),
+        ));
   }
 
   List<Widget> _filtros() {
@@ -355,98 +403,69 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
         ));
   }
 
-  Widget body() {
-    return Scaffold(
-        backgroundColor: ColorPalette.ticketsTextSelectedColor,
-        appBar: MyCustomAppBarDesktop(
-          title: "Recibidos",
-          context: context,
-          textColor: Colors.white,
-          backButton: false,
-          color: ColorPalette.ticketsColor,
-          ticketsFlag: false,
-          backButtonWidget: TextButton.icon(
-            icon: const Icon(IconLibrary.iconBack, color: Colors.white),
-            label: const Text(
-              Texts.ticketExit,
-              style: TextStyle(color: Colors.white),
-            ),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.white,
-              backgroundColor: Colors.transparent,
-            ),
-            onPressed: () {
-              Navigator.of(widget.context).pop();
-            },
-          ),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 5),
-          child: SingleChildScrollView(
-            child: Column(children: [
-              if (size.width > 1260) ...[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        ..._filtros(),
-                      ],
-                    ),
-                  ],
-                )
-              ] else ...[
-                Row(
-                  children: [
-                    _filtros()[0],
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    _filtros()[2],
-                    const SizedBox(
-                      width: 10,
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 5,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        _filtros()[4],
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        _filtros()[6],
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        _filtros()[8],
-                      ],
-                    ),
-                  ],
-                ),
+  Widget body(state) {
+    return Column(children: [
+      if (size.width > 1260) ...[
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                ..._filtros(),
               ],
-              const SizedBox(
-                height: 5,
-              ),
-              SizedBox(
-                  height: size.height - 120,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15.0),
-                      color: ColorPalette.ticketsColor,
-                    ),
-                    padding: const EdgeInsets.all(5),
-                    child: futureList(),
-                  ))
-            ]),
-          ),
-        )); //body: Column(children: [..._filtros()],),);
+            ),
+          ],
+        )
+      ] else ...[
+        Row(
+          children: [
+            _filtros()[0],
+            const SizedBox(
+              width: 10,
+            ),
+            _filtros()[2],
+            const SizedBox(
+              width: 10,
+            ),
+          ],
+        ),
+        const SizedBox(
+          height: 5,
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                _filtros()[4],
+                const SizedBox(
+                  width: 10,
+                ),
+                _filtros()[6],
+                const SizedBox(
+                  width: 10,
+                ),
+                _filtros()[8],
+              ],
+            ),
+          ],
+        ),
+      ],
+      const SizedBox(
+        height: 5,
+      ),
+      SizedBox(
+          height: size.height - 120,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15.0),
+              color: ColorPalette.ticketsColor,
+            ),
+            padding: const EdgeInsets.all(5),
+            child: blocList(state),
+          ))
+    ]);
   }
 
   Widget bodyMobile() {
@@ -518,7 +537,7 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
             } else {
               return RefreshIndicator(
                 onRefresh: () async {
-                  await _getDatosReload();
+                  context.read<TicketsBloc>().add(TicketsFetched());
                 },
                 color: ColorPalette.ticketsColor2,
                 backgroundColor: ColorPalette.ticketsUnselectedColor,
@@ -533,6 +552,16 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
         }
       },
     );
+  }
+
+  Widget blocList(state){
+    if(state is TicketsLoading){
+      return Center(child: _buildLoadingIndicator(10));
+    } else if(state is TicketsSuccess){
+      return futureListTickets();
+    }else{
+      return SingleChildScrollView(child: Center(child: NoDataWidget()),);
+    }
   }
 
   Widget futureListTickets() {
@@ -557,7 +586,7 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
           ),
         ),
         onRefresh: () async {
-          await _getDatosReload();
+          context.read<TicketsBloc>().add(TicketsFetched());
         });
   }
 
@@ -614,7 +643,8 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
         child: Padding(
           padding: const EdgeInsets.all(5.0),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start, // Alinea el contenido en la parte superior
+            crossAxisAlignment: CrossAxisAlignment
+                .start, // Alinea el contenido en la parte superior
             children: [
               Expanded(
                 flex: 1,
@@ -635,23 +665,23 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
                         children: [
                           Expanded(
                               child: ListView(
-                                padding: const EdgeInsets.only(top: 5.0),
-                                scrollDirection: Axis.horizontal,
-                                children: [
-                                  Tooltip(
-                                    message: "Título: ${tickets.Titulo}",
-                                    waitDuration: const Duration(milliseconds: 800),
-                                    child: Text(
-                                      tickets.Titulo,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  )
-                                ],
-                              )),
+                            padding: const EdgeInsets.only(top: 5.0),
+                            scrollDirection: Axis.horizontal,
+                            children: [
+                              Tooltip(
+                                message: "Título: ${tickets.Titulo}",
+                                waitDuration: const Duration(milliseconds: 800),
+                                child: Text(
+                                  tickets.Titulo,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              )
+                            ],
+                          )),
                           if (tickets.Estatus == "Cerrado") ...[
                             const SizedBox(
                               width: 15,
@@ -744,18 +774,18 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
                         height: 6,
                       ),
                       tickets.Imagen1!.isEmpty &&
-                          tickets.Imagen2!.isEmpty &&
-                          tickets.Imagen3!.isEmpty
+                              tickets.Imagen2!.isEmpty &&
+                              tickets.Imagen3!.isEmpty
                           ? SizedBox(
-                        height: 90,
-                      )
+                              height: 90,
+                            )
                           : const Text(
-                        "Archivos adjuntos:",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold),
-                      ),
+                              "Archivos adjuntos:",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold),
+                            ),
                       Row(
                         children: [
                           if (tickets.Imagen1 != null &&
@@ -872,7 +902,7 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
                                         await _getDatos();
                                       }
                                     },
-                                    width:157.5,
+                                    width: 157.5,
                                   ),
                                 ),
                                 const SizedBox(
@@ -905,69 +935,64 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
   Widget buildDateInfo(TicketsModels tickets) {
     return size.width > 1100
         ? Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(
-          child: Text(
-            "Fecha de creación : ${tickets.FechaCreacion?.split("T")[0]} ${tickets.FechaCreacion?.split("T")[1].split(".")[0]}",
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
-              fontSize: min(17 * (size.width / 1200), 12.0),
-            ),
-          ),
-        ),
-        Expanded(
-          child: tickets.FechaFinalizacion == null
-              ? tickets.FechaAtencion == null
-              ? SizedBox()
-              : Text(
-              "Fecha de Atencion : ${tickets.FechaAtencion?.split("T")[0] ?? ""} ${tickets.FechaAtencion?.split("T")[1].split(".")[0] ?? ""}",
-              style: TextStyle(
-                  color:
-                  Colors.white.withOpacity(0.5),
-                  fontSize: min(
-                      17 * (size.width / 1200),
-                      12.0))) // No muestra nada si FechaFinalizacion es nulo
-              : Text(
-            "Fecha de finalización : ${tickets.FechaFinalizacion?.split("T")[0] ?? ""} ${tickets.FechaFinalizacion?.split("T")[1].split(".")[0] ?? ""}",
-            style: TextStyle(
-                color: Colors.white.withOpacity(0.5),
-                fontSize: min(17 * (size.width / 1200), 12.0)),
-          ),
-        ),
-      ],
-    )
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  "Fecha de creación : ${tickets.FechaCreacion?.split("T")[0]} ${tickets.FechaCreacion?.split("T")[1].split(".")[0]}",
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.5),
+                    fontSize: min(17 * (size.width / 1200), 12.0),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: tickets.FechaFinalizacion == null
+                    ? tickets.FechaAtencion == null
+                        ? SizedBox()
+                        : Text(
+                            "Fecha de Atencion : ${tickets.FechaAtencion?.split("T")[0] ?? ""} ${tickets.FechaAtencion?.split("T")[1].split(".")[0] ?? ""}",
+                            style: TextStyle(
+                                color: Colors.white.withOpacity(0.5),
+                                fontSize: min(17 * (size.width / 1200),
+                                    12.0))) // No muestra nada si FechaFinalizacion es nulo
+                    : Text(
+                        "Fecha de finalización : ${tickets.FechaFinalizacion?.split("T")[0] ?? ""} ${tickets.FechaFinalizacion?.split("T")[1].split(".")[0] ?? ""}",
+                        style: TextStyle(
+                            color: Colors.white.withOpacity(0.5),
+                            fontSize: min(17 * (size.width / 1200), 12.0)),
+                      ),
+              ),
+            ],
+          )
         : Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Fecha de creación      : ${tickets.FechaCreacion?.split("T")[0]} ${tickets.FechaCreacion?.split("T")[1].split(".")[0]}",
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.5),
-            fontSize: min(17 * (size.width / 1200), 12.0),
-          ),
-        ),
-        tickets.FechaFinalizacion == null
-            ? tickets.FechaAtencion == null
-            ? SizedBox()
-            : Text(
-            "Fecha de Atencion     : ${tickets.FechaAtencion?.split("T")[0] ?? ""} ${tickets.FechaAtencion?.split("T")[1].split(".")[0] ?? ""}",
-            style: TextStyle(
-                color:
-                Colors.white.withOpacity(0.5),
-                fontSize: min(
-                    17 * (size.width / 1200),
-                    12.0))) // No muestra nada si FechaFinalizacion es nulo
-            : Text(
-          "Fecha de finalización : ${tickets.FechaFinalizacion?.split("T")[0] ?? ""} ${tickets.FechaFinalizacion?.split("T")[1].split(".")[0] ?? ""}",
-          style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
-              fontSize: min(17 * (size.width / 1200), 12.0)),
-        ),
-      ],
-    );
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Fecha de creación      : ${tickets.FechaCreacion?.split("T")[0]} ${tickets.FechaCreacion?.split("T")[1].split(".")[0]}",
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.5),
+                  fontSize: min(17 * (size.width / 1200), 12.0),
+                ),
+              ),
+              tickets.FechaFinalizacion == null
+                  ? tickets.FechaAtencion == null
+                      ? SizedBox()
+                      : Text(
+                          "Fecha de Atencion     : ${tickets.FechaAtencion?.split("T")[0] ?? ""} ${tickets.FechaAtencion?.split("T")[1].split(".")[0] ?? ""}",
+                          style: TextStyle(
+                              color: Colors.white.withOpacity(0.5),
+                              fontSize: min(17 * (size.width / 1200),
+                                  12.0))) // No muestra nada si FechaFinalizacion es nulo
+                  : Text(
+                      "Fecha de finalización : ${tickets.FechaFinalizacion?.split("T")[0] ?? ""} ${tickets.FechaFinalizacion?.split("T")[1].split(".")[0] ?? ""}",
+                      style: TextStyle(
+                          color: Colors.white.withOpacity(0.5),
+                          fontSize: min(17 * (size.width / 1200), 12.0)),
+                    ),
+            ],
+          );
   }
-
 
   Widget cardMobile(TicketsModels tickets) {
     return GestureDetector(
@@ -1522,17 +1547,6 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
     );
   }
 
-  Widget _desktopBody(BuildContext context) {
-    return Scaffold(
-        backgroundColor: ColorPalette.ticketsTextSelectedColor, body: body());
-  }
-
-  Widget _mobileBody(BuildContext context) {
-    return Scaffold(
-        backgroundColor: ColorPalette.ticketsTextSelectedColor,
-        body: bodyMobile());
-  }
-
   Future<void> aplicarFiltroFechaReporte() async {
     await Permission.storage.request().isGranted;
     if (startDateReport != null && endDateReport != null) {
@@ -1577,12 +1591,12 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
 
       if (oldStatus == "Abierto") {
         if (estatus == "Resuelto" || estatus == "En Progreso") {
-
           print("Se cambio de abierto a +${estatus} por ${idUsuario}");
-         bool saveAtention=  await attentionController.saveAtentionDate(id) as bool;
-         if(saveAtention){
-           print("Guardado la atención correctamente");
-         }
+          bool saveAtention =
+              await attentionController.saveAtentionDate(id) as bool;
+          if (saveAtention) {
+            print("Guardado la atención correctamente");
+          }
         }
       }
       bool save = await statusController.changueStatus(status);
