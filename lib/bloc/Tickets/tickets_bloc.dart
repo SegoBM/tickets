@@ -16,9 +16,10 @@ class TicketsBloc extends Bloc<TicketsEvent, TicketsState>{
   final ticketsRecibidosRepository ticketsRepository;
   TicketsBloc(this.ticketsRepository) : super(TicketsInitial()){
     on<TicketsFetched>((_getTicketsRecibidos));
-
+    on<TicketsFetchedByDateRange>(_onTicketsFetchedByDateRange);
   }
   void _getTicketsRecibidos(TicketsFetched event, Emitter<TicketsState> emit,) async {
+    emit(TicketsLoading());
     DateTime before = today.subtract(const Duration(days: 5));
     DateTime after = today.add(const Duration(days: 1));
     final departamentoController = departamentController();
@@ -26,8 +27,6 @@ class TicketsBloc extends Bloc<TicketsEvent, TicketsState>{
     String? idPuesto = await userPreferences.getPuestoID();
     String idDepartamento =  await departamentoController.getPuesto(idPuesto!);
 
-
-    emit(TicketsLoading());
     try{
       final ticketsRecibidos = await ticketsRepository.getTicketsAsignados(   "${before.year}-${before.month}-${before.day}",
           "${after.year}-${after.month}-${after.day},", idUsuario,idDepartamento);
@@ -39,6 +38,28 @@ class TicketsBloc extends Bloc<TicketsEvent, TicketsState>{
       }
     }catch(e){
       emit(TicketsFailure(message: e.toString()));
+    }
+  }
+  Future<void> _onTicketsFetchedByDateRange(
+      TicketsFetchedByDateRange event, Emitter<TicketsState> emit) async {
+    try {
+      emit(TicketsLoading());
+
+      String idUsuario = await userPreferences.getUsuarioID();
+      String? idPuesto = await userPreferences.getPuestoID();
+      final departamentoController = departamentController();
+      String idDepartamento =  await departamentoController.getPuesto(idPuesto!);
+      final tickets = await ticketsRepository.getTicketsAsignados(
+        "${event.startDate}",
+        "${event.endDate}",
+        idUsuario,idDepartamento
+      );
+      if (tickets.isEmpty) {
+        emit(TicketsFailure(message: 'No tickets found'));
+      }
+      emit(TicketsSuccess(tickets: tickets));
+    } catch (error) {
+      emit(TicketsFailure(message: error.toString()));
     }
   }
 }

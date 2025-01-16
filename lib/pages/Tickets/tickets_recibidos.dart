@@ -37,7 +37,6 @@ import '../../shared/utils/user_preferences.dart';
 import '../../shared/widgets/Snackbars/customSnackBar.dart';
 import '../../shared/widgets/buttons/custom_button.dart';
 import '../../shared/widgets/buttons/custom_dropdown_button.dart';
-import '../../shared/widgets/error/customNoData.dart';
 import '../../shared/widgets/progressBar/progressBar.dart';
 import '../../shared/widgets/textfields/my_textfield_icon.dart';
 import 'package:fading_edge_scrollview/fading_edge_scrollview.dart';
@@ -153,8 +152,7 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
           body: BlocConsumer<TicketsBloc, TicketsState>(
             listener: (context, state) {
               if (state is TicketsFailure) {
-                CustomSnackBar.showErrorSnackBar(
-                    context, Texts.errorGettingData);
+
               }
               if (state is TicketsSuccess) {
                 listTickets = state.tickets;
@@ -167,7 +165,7 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
                 child: Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                  child: size.width > 600 ? body(state) : bodyMobile(),
+                  child: size.width > 600 ? body(state) : bodyMobile(state),
                 ),
               );
             },
@@ -349,7 +347,11 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
           endDate = end.add(const Duration(days: 1));
           startDate = start;
           Navigator.of(context, rootNavigator: true).pop();
-          await aplicarFiltroFecha();
+          //await aplicarFiltroFecha();
+          context.read<TicketsBloc>().add(TicketsFetchedByDateRange(
+            startDate: start,
+            endDate: end.add(const Duration(days: 1)), // Incluye el día completo
+          ));
           await Future.delayed(const Duration(milliseconds: 400), () {
             LoadingDialogTickets.hideLoadingDialogTickets(context);
           });
@@ -468,7 +470,7 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
     ]);
   }
 
-  Widget bodyMobile() {
+  Widget bodyMobile(state) {
     return Scaffold(
         backgroundColor: ColorPalette.ticketsTextSelectedColor,
         body: Padding(
@@ -513,45 +515,12 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
                         color: ColorPalette.ticketsColor,
                       ),
                       padding: const EdgeInsets.all(3),
-                      child: futureList(),
+                      child: blocList(state),
                     ))
               ],
             ),
           ),
         )); //body: Column(children: [..._filtros()],),);
-  }
-
-  Widget futureList() {
-    return FutureBuilder<List<TicketsModels>>(
-      future: _getDatos2(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: _buildLoadingIndicator(10));
-        } else {
-          final listTickets = snapshot.data ?? [];
-          if (listTickets.isNotEmpty) {
-            return futureListTickets();
-          } else {
-            if (_isLoading) {
-              return Center(child: _buildLoadingIndicator(4));
-            } else {
-              return RefreshIndicator(
-                onRefresh: () async {
-                  context.read<TicketsBloc>().add(TicketsFetched());
-                },
-                color: ColorPalette.ticketsColor2,
-                backgroundColor: ColorPalette.ticketsUnselectedColor,
-                child: SingleChildScrollView(
-                    child: Center(
-                        child: NoDataWidgetTickets(
-                  text: Texts.ticketNotFind,
-                ))),
-              );
-            }
-          }
-        }
-      },
-    );
   }
 
   Widget blocList(state){
@@ -560,7 +529,7 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
     } else if(state is TicketsSuccess){
       return futureListTickets();
     }else{
-      return SingleChildScrollView(child: Center(child: NoDataWidget()),);
+      return SingleChildScrollView(child: Center(child: NoDataWidgetTickets()),);
     }
   }
 
