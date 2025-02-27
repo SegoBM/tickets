@@ -5,15 +5,15 @@ import '../../models/TicketsModels/ticket.dart';
 import '../../shared/utils/user_preferences.dart';
 
 
-part 'tickets_event.dart';
-part 'tickets_state.dart';
+part 'ticketsRecibidos_event.dart';
+part 'ticketsRecibidos_state.dart';
 
 class TicketsBloc extends Bloc<TicketsEvent, TicketsState>{
   UserPreferences userPreferences = UserPreferences();
   DateTime today = DateTime.now();
 
 
-  final ticketsRecibidosRepository ticketsRepository;
+  final TicketsRecibidosRepository ticketsRepository;
   TicketsBloc(this.ticketsRepository) : super(TicketsInitial()){
     on<TicketsFetched>((_getTicketsRecibidos));
     on<TicketsFetchedByDateRange>(_onTicketsFetchedByDateRange);

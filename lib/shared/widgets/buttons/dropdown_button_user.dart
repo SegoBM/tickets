@@ -18,7 +18,7 @@ Widget myDropdownButtonUser(ThemeData theme, BuildContext context, [Color? color
         child: CircleAvatar(
           backgroundColor:  colorAvatar??theme.colorScheme.secondary,
           radius: 20, // Adjust the size as needed
-          backgroundImage: AssetImage('assets/avatar.png'), // Replace with your image path
+          backgroundImage: AssetImage('assets/avatarxl.png'), // Replace with your image path
         ),
       ),
       items: [

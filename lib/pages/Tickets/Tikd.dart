@@ -3,10 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:custom_date_range_picker/custom_date_range_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:tickets/bloc/TicketsRecibidosAdmin/ticketsRecibidosAdmin_bloc.dart';
 import 'package:tickets/models/TicketsModels/Comentario.dart';
 import 'package:tickets/models/TicketsModels/ticketsReportModel.dart';
 import 'package:tickets/pages/Tickets/ticketEditScreen.dart';
@@ -29,7 +26,6 @@ import '../../models/TicketsModels/satisfaction.dart';
 import '../../models/TicketsModels/status.dart';
 import '../../models/TicketsModels/ticket.dart';
 import '../../shared/actions/handleException.dart';
-import '../../shared/actions/key_raw_listener.dart';
 import '../../shared/pdf/pw_pdf/generate_material_report.dart';
 import '../../shared/utils/texts.dart';
 import '../../shared/utils/user_preferences.dart';
@@ -76,72 +72,35 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
   List<TicketsModels> listTickets = [];
   bool isEmpty = false, _isLoading = true;
   int itemCount = 0;
-  late DateTime before;
-  late DateTime after;
   DateTime? startDate, endDate, startDateReport, endDateReport;
   ThemeData theme = ThemeData();
   final key = GlobalKey();
   @override
   void initState() {
     super.initState();
-    before = today.subtract(const Duration(days: 5));
-    after = today.add(const Duration(days: 1));
-    context.read<TicketsBlocRecibidosAdmin>().add(TicketsFetched());
     _getDatos();
+    const timeLimit = Duration(seconds: 15);
+    Timer(timeLimit, () {
+      if (listTickets.isEmpty) {
+        if (!isEmpty) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      } else {
+        _isLoading = false;
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     size = MediaQuery.of(context).size;
     theme = Theme.of(context);
-
-    return PressedKeyListener(
-        keyActions: <LogicalKeyboardKey, Function()>{
-          LogicalKeyboardKey.escape: () async {
-            Navigator.of(context).pushNamed('dashboardScreen');
-          },
-        },
-        Gkey: key,
-        child: Scaffold(
-          backgroundColor: ColorPalette.ticketsTextSelectedColor,
-          appBar: size.width > 600
-              ? MyCustomAppBarDesktop(
-                  title: "Recibidos Administrador",
-                  context: context,
-                  textColor: Colors.white,
-                  backButton: false,
-                  color: ColorPalette.ticketsColor,
-                  ticketsFlag: false,
-                  backButtonWidget: TextButton.icon(
-                    icon: const Icon(IconLibrary.iconBack, color: Colors.white),
-                    label: const Text(
-                      Texts.ticketExit,
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: Colors.transparent,
-                    ),
-                    onPressed: () {
-                      Navigator.of(widget.context).pop();
-                    },
-                  ),
-                )
-              : null,
-          body: BlocConsumer<TicketsBlocRecibidosAdmin,
-              TicketsStateRecibidosAdmin>(
-            listener: (context, state) {
-              if (state is TicketsFailure) {}
-              if (state is TicketsSuccess) {
-                listTickets = state.tickets;
-                listTicketsTemp = listTickets;
-              }
-            },
-            builder: (context, state) {
-              return size.width > 600 ? body(state) : bodyMobile(state);
-            },
-          ),
-        ));
+    return Scaffold(
+      backgroundColor: ColorPalette.ticketsTextSelectedColor,
+      body: size.width > 500 ? body() : bodyMobile(),
+    );
   }
 
   List<Widget> _filtros() {
@@ -158,7 +117,7 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
           suffixIcon: const Icon(IconLibrary.iconSearch, color: Colors.black),
           focusNode: focusNode,
           floatingLabelStyle:
-              const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
           backgroundColor: ColorPalette.ticketsSelectedColor,
           formatting: false,
           colorLine: Colors.black54,
@@ -224,13 +183,13 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
             context: context,
             builder: size.width > 500
                 ? (context) => AlertDialog(
-                      backgroundColor: Colors.transparent,
-                      surfaceTintColor: Colors.transparent,
-                      content: SizedBox(
-                          width: 338,
-                          height: 530,
-                          child: dialogCustomDateRangePickerFilter()),
-                    )
+              backgroundColor: Colors.transparent,
+              surfaceTintColor: Colors.transparent,
+              content: SizedBox(
+                  width: 338,
+                  height: 530,
+                  child: dialogCustomDateRangePickerFilter()),
+            )
                 : (context) => dialogCustomDateRangePickerFilter(),
           );
         },
@@ -247,28 +206,28 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
       FloatingActionButton(
         onPressed: () {
           CustomAwesomeDialogTickets(
-                  title:
-                      "¿Estas seguro que deseas generar un reporte de tickets?\n",
-                  desc: Texts.ticketRemember,
-                  btnOkOnPress: () async {
-                    showDialog<DateTimeRange>(
-                      context: context,
-                      builder: size.width > 500
-                          ? (context) => AlertDialog(
-                                backgroundColor: Colors.transparent,
-                                surfaceTintColor: Colors.transparent,
-                                content: SizedBox(
-                                    width: 338,
-                                    height: 530,
-                                    child:
-                                        dialogCustomDateRangePickerFilterReport()),
-                              )
-                          : (context) =>
-                              dialogCustomDateRangePickerFilterReport(),
-                    );
-                  },
-                  width: size.width > 500 ? null : size.width * 0.9,
-                  btnCancelOnPress: () {})
+              title:
+              "¿Estas seguro que deseas generar un reporte de tickets?\n",
+              desc: Texts.ticketRemember,
+              btnOkOnPress: () async {
+                showDialog<DateTimeRange>(
+                  context: context,
+                  builder: size.width > 500
+                      ? (context) => AlertDialog(
+                    backgroundColor: Colors.transparent,
+                    surfaceTintColor: Colors.transparent,
+                    content: SizedBox(
+                        width: 338,
+                        height: 530,
+                        child:
+                        dialogCustomDateRangePickerFilterReport()),
+                  )
+                      : (context) =>
+                      dialogCustomDateRangePickerFilterReport(),
+                );
+              },
+              width: size.width > 500 ? null : size.width * 0.9,
+              btnCancelOnPress: () {})
               .showQuestion(context);
         },
         tooltip: Texts.ticketSelectDateRangeReport,
@@ -350,7 +309,7 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
         ),
         style: ButtonStyle(
           backgroundColor:
-              MaterialStateProperty.all<Color>(ColorPalette.ticketsColor),
+          MaterialStateProperty.all<Color>(ColorPalette.ticketsColor),
           shape: MaterialStateProperty.all<RoundedRectangleBorder>(
             RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10.0),
@@ -366,99 +325,113 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
       LoadingDialogTickets.hideLoadingDialogTickets(context);
       await Navigator.of(widget.context).push(MaterialPageRoute(
           builder: (context) => TicketsConversationScreen(
-                idTicket: idTickets,
-                listCommentaries: listCommentary,
-                activeMessages: true,
-              )));
+            idTicket: idTickets,
+            listCommentaries: listCommentary,
+            activeMessages: true,
+          )));
       listCommentary.clear();
     } catch (e) {
       LoadingDialogTickets.hideLoadingDialogTickets(context);
     }
   }
 
-  Widget body(state) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            if (size.width > 1260) ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      ..._filtros(),
-                    ],
-                  ),
-                ],
-              )
-            ] else ...[
-              Row(
-                children: [
-                  _filtros()[0],
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  _filtros()[2]
-                ],
-              ),
-              const SizedBox(
-                height: 5,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      _filtros()[4],
-                      const SizedBox(
-                        width: 10,
-                      ),
-                      _filtros()[6],
-                      const SizedBox(
-                        width: 10,
-                      ),
-                      _filtros()[8],
-                    ],
-                  ),
-                ],
-              ),
-            ],
-            const SizedBox(
-              height: 5,
+  Widget body() {
+    return Scaffold(
+        backgroundColor: ColorPalette.ticketsTextSelectedColor,
+        appBar: MyCustomAppBarDesktop(
+          title: "Recibidos Admin",
+          context: context,
+          textColor: Colors.white,
+          backButton: false,
+          color: ColorPalette.ticketsColor,
+          ticketsFlag: false,
+          defaultButtons: true,
+          extracolor2: Colors.white,
+          extracolor: ColorPalette.ticketsColor,
+          backButtonWidget: TextButton.icon(
+            icon: const Icon(
+              IconLibrary.iconBack,
+              color: Colors.white,
             ),
-            SizedBox(
-                height: size.height - 120,
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(15.0),
-                    color: ColorPalette.ticketsColor,
-                  ),
-                  padding: const EdgeInsets.all(5),
-                  child: blocList(state),
-                ))
-          ],
+            label: const Text(
+              Texts.ticketExit,
+              style: TextStyle(color: Colors.white),
+            ),
+            style: TextButton.styleFrom(
+              primary: Colors.white,
+              backgroundColor: Colors.transparent,
+            ),
+            onPressed: () {
+              Navigator.of(widget.context).pop();
+            },
+          ),
         ),
-      ),
-    );
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                if (size.width > 1260) ...[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          ..._filtros(),
+                        ],
+                      ),
+                    ],
+                  )
+                ] else ...[
+                  Row(
+                    children: [
+                      _filtros()[0],
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      _filtros()[2]
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 5,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          _filtros()[4],
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          _filtros()[6],
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+                const SizedBox(
+                  height: 5,
+                ),
+                SizedBox(
+                    height: size.height - 120,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15.0),
+                        color: ColorPalette.ticketsColor,
+                      ),
+                      padding: const EdgeInsets.all(5),
+                      child: futureList(),
+                    ))
+              ],
+            ),
+          ),
+        ));
     //body: Column(children: [..._filtros()],),);
   }
 
-  Widget blocList(state) {
-    if (state is TicketsLoading) {
-      return Center(child: _buildLoadingIndicator(10));
-    } else if (state is TicketsSuccess) {
-      return futureList();
-    } else {
-      return SingleChildScrollView(
-        child: Center(child: NoDataWidgetTickets()),
-      );
-    }
-  }
-
-  Widget bodyMobile(state) {
+  Widget bodyMobile() {
     return Scaffold(
         backgroundColor: ColorPalette.ticketsTextSelectedColor,
         body: Padding(
@@ -469,24 +442,24 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
               children: [
                 FadingEdgeScrollView.fromSingleChildScrollView(
                     child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  controller: scrollControllerMobile,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _filtros()[0],
-                      const SizedBox(
-                        width: 5,
+                      scrollDirection: Axis.horizontal,
+                      controller: scrollControllerMobile,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _filtros()[0],
+                          const SizedBox(
+                            width: 5,
+                          ),
+                          _filtros()[6],
+                          const SizedBox(
+                            width: 5,
+                          ),
+                          buttonFilters(),
+                          //const SizedBox(width: 5,),
+                        ],
                       ),
-                      _filtros()[6],
-                      const SizedBox(
-                        width: 5,
-                      ),
-                      buttonFilters(),
-                      //const SizedBox(width: 5,),
-                    ],
-                  ),
-                )),
+                    )),
                 const SizedBox(
                   height: 5,
                 ),
@@ -498,7 +471,7 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
                         color: ColorPalette.ticketsColor,
                       ),
                       padding: const EdgeInsets.all(7),
-                      child: blocList(state),
+                      child: futureList(mobile: true),
                     ))
               ],
             ),
@@ -564,7 +537,7 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
         BuildContext context = key.currentContext!;
         final RenderBox button = context.findRenderObject() as RenderBox;
         final RenderBox overlay =
-            Overlay.of(context).context.findRenderObject() as RenderBox;
+        Overlay.of(context).context.findRenderObject() as RenderBox;
         final RelativeRect position = RelativeRect.fromRect(
           Rect.fromPoints(
             button.localToGlobal(button.size.bottomCenter(Offset.zero),
@@ -603,30 +576,54 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
     );
   }
 
-  Widget futureList() {
-    return RefreshIndicator(
-        color: ColorPalette.ticketsColor2,
-        backgroundColor: ColorPalette.ticketsUnselectedColor,
-        child: Scrollbar(
-          thumbVisibility: true,
-          controller: scrollController,
-          child: FadingEdgeScrollView.fromScrollView(
-            child: ListView.builder(
-              itemCount: listTicketsTemp.length,
-              shrinkWrap: true,
-              controller: scrollController,
-              physics: const AlwaysScrollableScrollPhysics(),
-              itemBuilder: (context, index) {
-                return size.width > 500
-                    ? card(listTicketsTemp[index])
-                    : cardMobile(listTicketsTemp[index]);
+  Widget futureList({bool mobile = false}) {
+    return FutureBuilder<List<TicketsModels>>(
+      future: _getDatos2(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: _buildLoadingIndicator(10));
+        } else {
+          final listTickets = snapshot.data ?? [];
+          if (listTickets.isNotEmpty) {
+            return RefreshIndicator(
+              onRefresh: () {
+                return _getDatos();
               },
-            ),
-          ),
-        ),
-        onRefresh: () async {
-          context.read<TicketsBlocRecibidosAdmin>().add(TicketsFetched());
-        });
+              color: ColorPalette.ticketsColor2,
+              backgroundColor: ColorPalette.ticketsUnselectedColor,
+              child: Scrollbar(
+                thumbVisibility: true,
+                controller: scrollController,
+                child: FadingEdgeScrollView.fromScrollView(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    controller: scrollController,
+                    itemCount: listTicketsTemp.length,
+                    itemBuilder: (context, index) {
+                      return !mobile
+                          ? card(listTicketsTemp[index])
+                          : cardMobile(listTicketsTemp[index]);
+                    },
+                  ),
+                ),
+              ),
+            );
+          } else {
+            if (_isLoading) {
+              return Center(child: _buildLoadingIndicator(10));
+            } else {
+              return SingleChildScrollView(
+                child: Center(
+                    child: NoDataWidgetTickets(
+                      text: "No se encontrarón Tickets",
+                    )),
+              );
+            }
+          }
+        }
+      },
+    );
   }
 
   Widget cardMobile(TicketsModels tickets) {
@@ -667,9 +664,9 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
                                   child: SizedBox(
                                     width: tickets.Titulo.length > 10
                                         ? size.width / 3.2 +
-                                            (tickets.Estatus == "Cerrado"
-                                                ? 15
-                                                : 0)
+                                        (tickets.Estatus == "Cerrado"
+                                            ? 15
+                                            : 0)
                                         : null,
                                     child: Text(
                                       tickets.Titulo,
@@ -753,6 +750,7 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
                                   fontSize: 13 * (size.width / 350),
                                   fontWeight: FontWeight.bold),
                             ),
+
                             const SizedBox(
                               height: 10,
                             ),
@@ -857,25 +855,25 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
                         children: [
                           Expanded(
                               child: ListView(
-                            padding: const EdgeInsets.only(top: 5.0),
-                            scrollDirection: Axis.horizontal,
-                            children: [
-                              const SizedBox(
-                                width: 10,
-                              ),
-                              Tooltip(
-                                message: "Título: ${tickets.Titulo}",
-                                waitDuration: const Duration(milliseconds: 800),
-                                child: Text(
-                                  tickets.Titulo,
-                                  style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              )
-                            ],
-                          )),
+                                padding: const EdgeInsets.only(top: 5.0),
+                                scrollDirection: Axis.horizontal,
+                                children: [
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+                                  Tooltip(
+                                    message: "Título: ${tickets.Titulo}",
+                                    waitDuration: const Duration(milliseconds: 800),
+                                    child: Text(
+                                      tickets.Titulo,
+                                      style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  )
+                                ],
+                              )),
                         ],
                       ),
                     ),
@@ -903,16 +901,14 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
                     const SizedBox(
                       height: 6,
                     ),
-                    tickets.NombreUsuarioAsignado == null
-                        ? const SizedBox()
-                        : Text(
-                            "Nombre usuario asignado: ${tickets.NombreUsuarioAsignado}",
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                                color: Colors.white.withOpacity(0.8),
-                                fontSize: 13 * (size.width / 1400),
-                                fontWeight: FontWeight.bold),
-                          ),
+                    Text(
+                      "Nombre usuario asignado: ${tickets.NombreUsuarioAsignado}",
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          color: Colors.white.withOpacity(0.8),
+                          fontSize: 13 * (size.width / 1400),
+                          fontWeight: FontWeight.bold),
+                    ),
                     const SizedBox(
                       height: 5,
                     ),
@@ -959,21 +955,22 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
                               ),
                             ),
                           ),
+
                           buildDateInfo(tickets),
                           const SizedBox(
                             height: 15,
                           ),
                           tickets.Imagen1!.isEmpty &&
-                                  tickets.Imagen2!.isEmpty &&
-                                  tickets.Imagen3!.isEmpty
+                              tickets.Imagen2!.isEmpty &&
+                              tickets.Imagen3!.isEmpty
                               ? const SizedBox()
                               : const Text(
-                                  "Archivos adjuntos:",
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold),
-                                ),
+                            "Archivos adjuntos:",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold),
+                          ),
                           Row(
                             children: [
                               if (tickets.Imagen1 != null &&
@@ -988,7 +985,7 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
                                       },
                                       child: const Icon(Icons.insert_drive_file,
                                           color:
-                                              Colors.white), // Icono de archivo
+                                          Colors.white), // Icono de archivo
                                     ),
                                   ),
                                 ),
@@ -1005,7 +1002,7 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
                                       },
                                       child: const Icon(Icons.insert_drive_file,
                                           color:
-                                              Colors.white), // Icono de archivo
+                                          Colors.white), // Icono de archivo
                                     ),
                                   ),
                                 ),
@@ -1022,7 +1019,7 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
                                       },
                                       child: const Icon(Icons.insert_drive_file,
                                           color:
-                                              Colors.white), // Icono de archivo
+                                          Colors.white), // Icono de archivo
                                     ),
                                   ),
                                 ),
@@ -1079,10 +1076,9 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
                                       onTap: (status) {
                                         print('Status tapped: $status');
                                       },
-                                      width: 157.5,
+                                      width:157.5,
                                     ),
-                                  ),
-                                  const SizedBox(
+                                  ),       const SizedBox(
                                     height: 8,
                                   ),
                                 ],
@@ -1111,88 +1107,92 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
   Widget buildDateInfo(TicketsModels tickets) {
     return size.width > 1100
         ? Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  "Fecha de creación : ${tickets.FechaCreacion?.split("T")[0]} ${tickets.FechaCreacion?.split("T")[1].split(".")[0]}",
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.5),
-                    fontSize: min(17 * (size.width / 1200), 12.0),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: tickets.FechaFinalizacion == null
-                    ? tickets.FechaAtencion == null
-                        ? SizedBox()
-                        : Text(
-                            "Fecha de Atencion : ${tickets.FechaAtencion?.split("T")[0] ?? ""} ${tickets.FechaAtencion?.split("T")[1].split(".")[0] ?? ""}",
-                            style: TextStyle(
-                                color: Colors.white.withOpacity(0.5),
-                                fontSize: min(17 * (size.width / 1200),
-                                    12.0))) // No muestra nada si FechaFinalizacion es nulo
-                    : Text(
-                        "Fecha de finalización : ${tickets.FechaFinalizacion?.split("T")[0] ?? ""} ${tickets.FechaFinalizacion?.split("T")[1].split(".")[0] ?? ""}",
-                        style: TextStyle(
-                            color: Colors.white.withOpacity(0.5),
-                            fontSize: min(17 * (size.width / 1200), 12.0)),
-                      ),
-              ),
-            ],
-          )
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Text(
+            "Fecha de creación : ${tickets.FechaCreacion?.split("T")[0]} ${tickets.FechaCreacion?.split("T")[1].split(".")[0]}",
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.5),
+              fontSize: min(17 * (size.width / 1200), 12.0),
+            ),
+          ),
+        ),
+        Expanded(
+          child: tickets.FechaFinalizacion == null
+              ? tickets.FechaAtencion == null
+              ? SizedBox()
+              : Text(
+              "Fecha de Atencion : ${tickets.FechaAtencion?.split("T")[0] ?? ""} ${tickets.FechaAtencion?.split("T")[1].split(".")[0] ?? ""}",
+              style: TextStyle(
+                  color:
+                  Colors.white.withOpacity(0.5),
+                  fontSize: min(
+                      17 * (size.width / 1200),
+                      12.0))) // No muestra nada si FechaFinalizacion es nulo
+              : Text(
+            "Fecha de finalización : ${tickets.FechaFinalizacion?.split("T")[0] ?? ""} ${tickets.FechaFinalizacion?.split("T")[1].split(".")[0] ?? ""}",
+            style: TextStyle(
+                color: Colors.white.withOpacity(0.5),
+                fontSize: min(17 * (size.width / 1200), 12.0)),
+          ),
+        ),
+      ],
+    )
         : Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Fecha de creación      : ${tickets.FechaCreacion?.split("T")[0]} ${tickets.FechaCreacion?.split("T")[1].split(".")[0]}",
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.5),
-                  fontSize: min(17 * (size.width / 1200), 12.0),
-                ),
-              ),
-              tickets.FechaFinalizacion == null
-                  ? tickets.FechaAtencion == null
-                      ? SizedBox()
-                      : Text(
-                          "Fecha de Atencion : ${tickets.FechaAtencion?.split("T")[0] ?? ""} ${tickets.FechaAtencion?.split("T")[1].split(".")[0] ?? ""}",
-                          style: TextStyle(
-                              color: Colors.white.withOpacity(0.5),
-                              fontSize: min(17 * (size.width / 1200),
-                                  12.0))) // No muestra nada si FechaFinalizacion es nulo
-                  : Text(
-                      "Fecha de finalización : ${tickets.FechaFinalizacion?.split("T")[0] ?? ""} ${tickets.FechaFinalizacion?.split("T")[1].split(".")[0] ?? ""}",
-                      style: TextStyle(
-                          color: Colors.white.withOpacity(0.5),
-                          fontSize: min(17 * (size.width / 1200), 12.0)),
-                    ),
-            ],
-          );
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Fecha de creación      : ${tickets.FechaCreacion?.split("T")[0]} ${tickets.FechaCreacion?.split("T")[1].split(".")[0]}",
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.5),
+            fontSize: min(17 * (size.width / 1200), 12.0),
+          ),
+        ),
+        tickets.FechaFinalizacion == null
+            ? tickets.FechaAtencion == null
+            ? SizedBox()
+            : Text(
+            "Fecha de Atencion : ${tickets.FechaAtencion?.split("T")[0] ?? ""} ${tickets.FechaAtencion?.split("T")[1].split(".")[0] ?? ""}",
+            style: TextStyle(
+                color:
+                Colors.white.withOpacity(0.5),
+                fontSize: min(
+                    17 * (size.width / 1200),
+                    12.0))) // No muestra nada si FechaFinalizacion es nulo
+            : Text(
+          "Fecha de finalización : ${tickets.FechaFinalizacion?.split("T")[0] ?? ""} ${tickets.FechaFinalizacion?.split("T")[1].split(".")[0] ?? ""}",
+          style: TextStyle(
+              color: Colors.white.withOpacity(0.5),
+              fontSize: min(17 * (size.width / 1200), 12.0)),
+        ),
+      ],
+    );
   }
 
   Widget editButton(TicketsModels tickets) {
     return tickets.Estatus != "Cerrado"
         ? Container(
-            alignment: Alignment.center,
-            height: 30,
-            width: 120,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              color: ColorPalette.ticketsColor2,
-            ),
-            child: TextButton(
-                onPressed: () async {
-                  await editTicket(tickets);
-                  await _getDatos();
-                  setState(() {});
-                },
-                child: const Text(
-                  "Reasignar ticket",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                  ),
-                )))
+        alignment: Alignment.center,
+        height: 30,
+        width: 120,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          color: ColorPalette.ticketsColor2,
+        ),
+        child: TextButton(
+            onPressed: () async {
+              await editTicket(tickets);
+              await _getDatos();
+              setState(() {});
+            },
+            child: const Text(
+              "Reasignar ticket",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+              ),
+            )))
         : Container();
   }
 
@@ -1232,7 +1232,7 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
                               child: SizedBox(
                                 width: tickets.Titulo.length > 10
                                     ? size.width / 3.2 +
-                                        (tickets.Estatus == "Cerrado" ? 15 : 0)
+                                    (tickets.Estatus == "Cerrado" ? 15 : 0)
                                     : null,
                                 child: Text(
                                   tickets.Titulo,
@@ -1367,9 +1367,10 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
     }
   }
 
+
   Color getColor(TicketsModels tickets) {
     Duration time =
-        DateTime.now().difference(DateTime.parse(tickets.FechaCreacion!));
+    DateTime.now().difference(DateTime.parse(tickets.FechaCreacion!));
     Color clock = Colors.white;
     if (tickets.Estatus == "Cerrado") {
       clock = Colors.black;
@@ -1608,12 +1609,12 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
             color: tickets.Prioridad == "Urgente"
                 ? Colors.red
                 : tickets.Prioridad == "Importante"
-                    ? Colors.orange
-                    : tickets.Prioridad == "No urgente"
-                        ? Colors.green
-                        : tickets.Prioridad == "Pregunta"
-                            ? Colors.blue
-                            : Colors.black,
+                ? Colors.orange
+                : tickets.Prioridad == "No urgente"
+                ? Colors.green
+                : tickets.Prioridad == "Pregunta"
+                ? Colors.blue
+                : Colors.black,
           ),
           height: 25,
           width: width,
@@ -1627,25 +1628,26 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
       tickets.Estatus == "Cerrado"
           ? Container()
           : Container(
-              alignment: Alignment.center,
-              child: Icon(
-                Icons.access_time_filled_outlined,
-                color: clock,
-                size: 20,
-              ),
-              //child: Text(" ${tickets.Prioridad}", style: const TextStyle(color: Colors.white, fontSize: 11,),)
-            ),
+        alignment: Alignment.center,
+        child: Icon(
+          Icons.access_time_filled_outlined,
+          color: clock,
+          size: 20,
+        ),
+        //child: Text(" ${tickets.Prioridad}", style: const TextStyle(color: Colors.white, fontSize: 11,),)
+      ),
       tickets.Estatus == "Cerrado"
           ? Container()
           : Container(
-              alignment: Alignment.center,
-              child: Icon(
-                Icons.access_time_filled_outlined,
-                color: clock,
-                size: 20,
-              ),
-            ),
+        alignment: Alignment.center,
+        child: Icon(
+          Icons.access_time_filled_outlined,
+          color: clock,
+          size: 20,
+        ),
+      ),
       editButton(tickets)
+
     ];
   }
 
@@ -1662,12 +1664,12 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
             color: tickets.Prioridad == "Urgente"
                 ? Colors.red
                 : tickets.Prioridad == "Importante"
-                    ? Colors.orange
-                    : tickets.Prioridad == "No urgente"
-                        ? Colors.green
-                        : tickets.Prioridad == "Pregunta"
-                            ? Colors.blue
-                            : Colors.black,
+                ? Colors.orange
+                : tickets.Prioridad == "No urgente"
+                ? Colors.green
+                : tickets.Prioridad == "Pregunta"
+                ? Colors.blue
+                : Colors.black,
           ),
           height: 25,
           width: width,
@@ -1681,13 +1683,13 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
       tickets.Estatus == "Cerrado"
           ? Container()
           : Container(
-              alignment: Alignment.center,
-              child: Icon(
-                Icons.access_time_filled_outlined,
-                color: clock,
-                size: 20,
-              ),
-            ),
+        alignment: Alignment.center,
+        child: Icon(
+          Icons.access_time_filled_outlined,
+          color: clock,
+          size: 20,
+        ),
+      ),
     ];
   }
 
@@ -1705,10 +1707,10 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
         final ticketViewController = TicketViewController();
         DateTime before = today.subtract(const Duration(days: 5));
         dateInitial.text =
-            "${before.year}-${(before.month).toString().padLeft(2, "0")}-${before.day.toString().padLeft(2, "0")} / ${today.year}-${today.month.toString().padLeft(2, "0")}-${today.day.toString().padLeft(2, "0")}";
+        "${before.year}-${(before.month).toString().padLeft(2, "0")}-${before.day.toString().padLeft(2, "0")} / ${today.year}-${today.month.toString().padLeft(2, "0")}-${today.day.toString().padLeft(2, "0")}";
         listTempTickets =
-            await ticketViewController.getTicketsRecibidosReportAdmin(
-                "${startDateReport}", "${endDateReport},", "", department);
+        await ticketViewController.getTicketsRecibidosReportAdmin(
+            "${startDateReport}", "${endDateReport},", "", department);
         listTicketsTempReport = listTempTickets;
         if (listTicketsTempReport.isEmpty) {
           isEmpty = true;
@@ -1735,11 +1737,11 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
           LoadingDialogTickets.hideLoadingDialogTickets(context);
           await Future.delayed(const Duration(milliseconds: 200), () async {
             CustomAwesomeDialogTickets(
-                    title: Texts.updateSuccess,
-                    desc: '',
-                    width: size.width > 500 ? null : size.width * 0.9,
-                    btnOkOnPress: () {},
-                    btnCancelOnPress: () {})
+                title: Texts.updateSuccess,
+                desc: '',
+                width: size.width > 500 ? null : size.width * 0.9,
+                btnOkOnPress: () {},
+                btnCancelOnPress: () {})
                 .showSuccess(context);
             await Future.delayed(
                 const Duration(milliseconds: 2550), () async {});
@@ -1861,14 +1863,14 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
     if (searchController.text.isNotEmpty) {
       listTicketsTemp = listTicketsTemp
           .where((ticket) =>
-              ticket.Titulo.toLowerCase()
-                  .contains(searchController.text.toLowerCase()) ||
-              "${ticket.UsuarioAsignadoID} ${ticket.NombreDepartamento} ${ticket.Estatus}"
-                  .toLowerCase()
-                  .contains(searchController.text.toLowerCase()) ||
-              ticket.UsuarioNombre!
-                  .toLowerCase()
-                  .contains(searchController.text.toLowerCase()))
+      ticket.Titulo.toLowerCase()
+          .contains(searchController.text.toLowerCase()) ||
+          "${ticket.UsuarioAsignadoID} ${ticket.NombreDepartamento} ${ticket.Estatus}"
+              .toLowerCase()
+              .contains(searchController.text.toLowerCase()) ||
+          ticket.UsuarioNombre!
+              .toLowerCase()
+              .contains(searchController.text.toLowerCase()))
           .toList();
     }
     setState(() {});
@@ -1885,7 +1887,7 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
         final ticketViewController = TicketViewController();
         DateTime before = today.subtract(const Duration(days: 5));
         dateInitial.text =
-            "${before.year}-${(before.month).toString().padLeft(2, "0")}-${before.day.toString().padLeft(2, "0")} / ${today.year}-${today.month.toString().padLeft(2, "0")}-${today.day.toString().padLeft(2, "0")}";
+        "${before.year}-${(before.month).toString().padLeft(2, "0")}-${before.day.toString().padLeft(2, "0")} / ${today.year}-${today.month.toString().padLeft(2, "0")}-${today.day.toString().padLeft(2, "0")}";
         listTickets = await ticketViewController.getTicketsRecibidosAdmin(
             "${startDate}", "${endDate},", department);
         listTicketsTemp = listTickets;
@@ -1939,7 +1941,7 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
       DateTime before = today.subtract(const Duration(days: 5));
       DateTime after = today.add(const Duration(days: 1));
       dateInitial.text =
-          "${before.year}-${(before.month).toString().padLeft(2, "0")}-${before.day.toString().padLeft(2, "0")} / ${today.year}-${today.month.toString().padLeft(2, "0")}-${today.day.toString().padLeft(2, "0")}";
+      "${before.year}-${(before.month).toString().padLeft(2, "0")}-${before.day.toString().padLeft(2, "0")} / ${today.year}-${today.month.toString().padLeft(2, "0")}-${today.day.toString().padLeft(2, "0")}";
       listTickets = await ticketViewController.getTicketsRecibidosAdmin(
           "${before.year}-${before.month}-${before.day}",
           "${after.year}-${after.month}-${after.day},",
@@ -2023,13 +2025,14 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
     }
   }
 
+
   getQualification(String idTicket) async {
     try {
       SatisfactionModel? satisfactionModel = SatisfactionModel();
       final SatisfactionController satisfactionController =
-          SatisfactionController();
+      SatisfactionController();
       satisfactionModel =
-          await satisfactionController.getSatisfaction(idTicket);
+      await satisfactionController.getSatisfaction(idTicket);
       return satisfactionModel;
     } catch (e) {
       print('Error al obtener calificación: $e');

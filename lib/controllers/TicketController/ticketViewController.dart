@@ -173,6 +173,10 @@ class TicketViewController with ChangeNotifier {
   }
 
   Future<List<TicketsReportModel>> getTicketsRecibidosReportUser(String startDateReport, String endDateReport, String? idUsuario,String? idDepartamento) async {
+    print(startDateReport);
+    print(endDateReport);
+    print(idUsuario);
+    print(idDepartamento);
     List<TicketsReportModel> listTickets = [];
     final url1 = Uri.http(urlapi, '/api/Tickets/TicketsReporte',{"startDate": startDateReport.split(" ")[0], "endDate": endDateReport.split(" ")[0], "idUsuario":idUsuario,"idDepartmento":idDepartamento});
     const int maxAttempts = 3; // Número máximo de intentos

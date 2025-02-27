@@ -1,4 +1,4 @@
-part of 'tickets_bloc.dart';
+part of 'ticketsRecibidos_bloc.dart';
 
 
 sealed class TicketsState{}

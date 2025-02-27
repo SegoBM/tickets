@@ -1,20 +1,20 @@
 import '../../../models/TicketsModels/ticket.dart';
-import '../../Data_provider/Tickets/ticketsRecibidos_data_provider.dart';
+import '../../Data_provider/Tickets/ticketsLevantados_data_provider.dart';
 
-class TicketsRecibidosRepository {
-  final TicketsAsignadosProvider ticketsRecibidosDataProvider;
-  TicketsRecibidosRepository(this.ticketsRecibidosDataProvider);
+class TicketsLevantadosRepository{
+  final TicketsLevantadosProvider ticketsLevantadosDataProvider;
+  TicketsLevantadosRepository(this.ticketsLevantadosDataProvider);
 
-  Future<List<TicketsModels>> getTicketsAsignados(
+  Future<List<TicketsModels>> getTicketsLevantados(
       String startDate, String endDate, String idUsuario,String idDepartamento) async {
     try {
       List<TicketsModels> listTickets = [];
-      final url1 = Uri.http(urlapi, '/api/Tickets/TicketsRecibidos', {"startDate": startDate, "endDate": endDate, "idUsuario": idUsuario, "idDepartmento": idDepartamento});
+      final url1 = Uri.http(urlapi, '/api/Tickets/TicketsAsignados', {"startDate": startDate, "endDate": endDate, "idUsuario": idUsuario, "idDepartmento": idDepartamento});
       const int maxAttempts = 3;
       int attempts = 0;
       while (attempts < maxAttempts) {
         print('Intento $attempts');
-        final response = await ticketsRecibidosDataProvider.getTicketsRecibidos(url1);
+        final response = await ticketsLevantadosDataProvider.getTicketsLevantados(url1);
 
         if (response != null) {
           if (response.statusCode == 200) {

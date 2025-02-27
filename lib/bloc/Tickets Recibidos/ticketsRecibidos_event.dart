@@ -1,7 +1,8 @@
-part of 'tickets_bloc.dart';
+part of 'ticketsRecibidos_bloc.dart';
 sealed class TicketsEvent {}
 
 final class TicketsFetched extends TicketsEvent {}
+
 
 class TicketsFetchedByDateRange extends TicketsEvent {
   final DateTime startDate;
