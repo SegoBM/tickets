@@ -100,9 +100,9 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
     super.initState();
     before = today.subtract(const Duration(days: 5));
     after = today.add(const Duration(days: 1));
+    _gettingData();
     context.read<TicketsBloc>().add(TicketsFetched());
 
-    _gettingData();
     player = AudioPlayer();
     player.setReleaseMode(ReleaseMode.stop);
   }
@@ -342,10 +342,11 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
           startDate = start;
           Navigator.of(context, rootNavigator: true).pop();
           //await aplicarFiltroFecha();
+          print(start);
+          print(end);
           context.read<TicketsBloc>().add(TicketsFetchedByDateRange(
                 startDate: start,
-                endDate:
-                    end.add(const Duration(days: 1)), // Incluye el día completo
+                endDate: end.add(const Duration(days: 1)), // Incluye el día completo
               ));
           await Future.delayed(const Duration(milliseconds: 400), () {
             LoadingDialogTickets.hideLoadingDialogTickets(context);

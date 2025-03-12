@@ -68,19 +68,19 @@ class _TicketHomeScreen extends State<TicketHomeScreen> {
           CustomSnackBar.showInfoSnackBar(context, "Dashboard");
         },
       ),
-      // SidebarItem(
-      //   text: 'Tickets',
-      //   icon: IconLibrary.iconStar,
-      //   isSelected: false,
-      //   onPressed: () {
-      //     setState(() => _headline = 'Dashboard');
-      //     navigatorKey.currentState!
-      //         .pushReplacementNamed('TicketsLevantadosScreen');
-      //   },
-      //   onHold: () {
-      //     CustomSnackBar.showInfoSnackBar(context, "Dashboard");
-      //   },
-      // ),
+      SidebarItem(
+        text: 'Tickets',
+        icon: IconLibrary.iconStar,
+        isSelected: false,
+        onPressed: () {
+          setState(() => _headline = 'Dashboard');
+          navigatorKey.currentState!
+              .pushReplacementNamed('TicketsLevantadosScreen');
+        },
+        onHold: () {
+          CustomSnackBar.showInfoSnackBar(context, "Dashboard");
+        },
+      ),
     ]));
     return items;
   }
@@ -169,27 +169,27 @@ class _TicketHomeScreen extends State<TicketHomeScreen> {
                 Navigator.of(context).pop();
               },
             ),
-            // ListTile(leading: const Icon(IconLibrary.iconStar, color: Colors.black,),
-            //   title: const Text('Tickets', style: TextStyle(color: Colors.black),),
-            //   onTap: () {
-            //     setState(() => _headline = 'Levantados');
-            //     //_selectedIndex = 0;
-            //     navigatorKey.currentState!.pushReplacementNamed('TicketsLevantadosScreen');
-            //     Navigator.of(context).pop();
-            //   },
-            // ),
-            // if(admin)...[
-            //   const Divider(),
-            //   ListTile(leading: const Icon(IconLibrary.iconCheck, color: Colors.black,),
-            //     title: const Text('Recibidos Admin', style: TextStyle(color: Colors.black),),
-            //     onTap: () {
-            //       setState(() => _headline = 'Recibidos Admin');
-            //       //_selectedIndex = 0;
-            //       navigatorKey.currentState!.pushReplacementNamed('TicketsRecibidosAdmin');
-            //       Navigator.of(context).pop();
-            //     },
-            //   ),
-            // ],
+            ListTile(leading: const Icon(IconLibrary.iconStar, color: Colors.black,),
+              title: const Text('Tickets', style: TextStyle(color: Colors.black),),
+              onTap: () {
+                setState(() => _headline = 'Levantados');
+                //_selectedIndex = 0;
+                navigatorKey.currentState!.pushReplacementNamed('TicketsLevantadosScreen');
+                Navigator.of(context).pop();
+              },
+            ),
+            if(admin)...[
+              const Divider(),
+              ListTile(leading: const Icon(IconLibrary.iconCheck, color: Colors.black,),
+                title: const Text('Recibidos Admin', style: TextStyle(color: Colors.black),),
+                onTap: () {
+                  setState(() => _headline = 'Recibidos Admin');
+                  //_selectedIndex = 0;
+                  navigatorKey.currentState!.pushReplacementNamed('TicketsRecibidosAdmin');
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
           ],
         ),
       ),
@@ -266,13 +266,13 @@ class _TicketHomeScreen extends State<TicketHomeScreen> {
         for (int i = 0; i < listPermisos.length; i++) {
         if(listPermisos[i].permisoId == "ccda55e9-d75f-4c1c-91a3-ddface216bd3"){
           admin = true;
-          // sidebarGroupRecibidosAdmin.items.add(SidebarItem(text: 'Recibidos Admin',
-          //   icon: IconLibrary.iconCheck, isSelected: false,
-          //   onPressed: () {
-          //     setState(() => _headline = 'Dashboard');
-          //     navigatorKey.currentState!.pushReplacementNamed('TicketsRecibidosAdmin');
-          //   }, onHold: () {CustomSnackBar.showInfoSnackBar(context, "Dashboard");},
-          // ));
+          sidebarGroupRecibidosAdmin.items.add(SidebarItem(text: 'Recibidos Admin',
+            icon: IconLibrary.iconCheck, isSelected: false,
+            onPressed: () {
+              setState(() => _headline = 'Dashboard');
+              navigatorKey.currentState!.pushReplacementNamed('TicketsRecibidosAdmin');
+            }, onHold: () {CustomSnackBar.showInfoSnackBar(context, "Dashboard");},
+          ));
         }
       }
       if(sidebarGroupRecibidosAdmin.items.isNotEmpty){

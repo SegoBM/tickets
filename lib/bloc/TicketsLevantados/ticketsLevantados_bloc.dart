@@ -20,7 +20,7 @@ class TicketsLevantadosBloc extends Bloc<TicketsEventLevantados, TicketsStateLev
   }
   void _getTicketsRecibidos(TicketsFetched event, Emitter<TicketsStateLevantados> emit,) async {
     emit(TicketsLoading());
-    DateTime before = today.subtract(const Duration(days: 5));
+    DateTime before = today.subtract(const Duration(days: 10));
     DateTime after = today.add(const Duration(days: 1));
     final departamentoController = departamentController();
     String idUsuario = await userPreferences.getUsuarioID();

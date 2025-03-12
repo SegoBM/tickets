@@ -1,4 +1,5 @@
 import '../../../models/TicketsModels/ticket.dart';
+import 'package:intl/intl.dart';
 import '../../Data_provider/Tickets/TicketsRecibidosAdmin_data_provider.dart';
 
 class TicketsRecibidosAdminRepository {
@@ -7,9 +8,13 @@ class TicketsRecibidosAdminRepository {
 
   Future<List<TicketsModels>> getTicketsRecibidosAdmin(
       String startDate, String endDate, String idDepartamento) async {
+    DateFormat dateFormat = DateFormat("yyyy-MM-dd");
+    DateTime StartDate = dateFormat.parse(startDate);
+    DateTime EndDate = dateFormat.parse(endDate);
+
     try {
       List<TicketsModels> listTickets = [];
-      final url1 = Uri.http(urlapi, '/api/Tickets/TicketsRecibidosAdministrador', {"startDate": startDate, "endDate": endDate, "idDepartmento": idDepartamento});
+      final url1 = Uri.http(urlapi, '/api/Tickets/TicketsRecibidosAdministrador', {"startDate": StartDate.toString(), "endDate": EndDate.toString(), "idDepartmento": idDepartamento});
       const int maxAttempts = 3;
       int attempts = 0;
       while (attempts < maxAttempts) {
