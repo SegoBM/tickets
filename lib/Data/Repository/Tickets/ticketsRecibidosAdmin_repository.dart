@@ -22,6 +22,7 @@ class TicketsRecibidosAdminRepository {
         final response = await ticketsRecibidosAdminDataProvider.getTicketsRecibidosAdmin(url1);
 
         if (response != null) {
+          print("hay datos");
           if (response.statusCode == 200) {
             listTickets = ticketsModelsFromJson(response.body);
             return listTickets;

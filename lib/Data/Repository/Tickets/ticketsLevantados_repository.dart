@@ -16,7 +16,7 @@ class TicketsLevantadosRepository{
 
     try {
       List<TicketsModels> listTickets = [];
-      final url1 = Uri.http(urlapi, '/api/Tickets/TicketsAsignados', {"startDate": StartDate.toString(), "endDate": EndDate.toIso8601String(), "idUsuario": idUsuario, "idDepartmento": idDepartamento});
+      final url1 = Uri.http(urlapi, '/api/Tickets/TicketsAsignados', {"startDate": StartDate.toString(), "endDate": EndDate.toString(), "idUsuario": idUsuario, "idDepartmento": idDepartamento});
       const int maxAttempts = 3;
       int attempts = 0;
       while (attempts < maxAttempts) {

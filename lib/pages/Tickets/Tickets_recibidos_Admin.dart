@@ -87,7 +87,6 @@ class _TicketsLevantados extends State<TicketsRecibidosAdmin> {
     before = today.subtract(const Duration(days: 5));
     after = today.add(const Duration(days: 1));
     context.read<TicketsBlocRecibidosAdmin>().add(TicketsFetched());
-    _getDatos();
   }
 
   @override
