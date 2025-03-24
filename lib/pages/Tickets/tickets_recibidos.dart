@@ -899,8 +899,8 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Center(
-                                // child: _customButtonShowConversation(
-                                //     tickets.IDTickets!)
+                                 child: _customButtonShowConversation(
+                                     tickets.IDTickets!)
                                    ),
                           ],
                         ),
