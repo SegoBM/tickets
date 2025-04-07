@@ -6,6 +6,7 @@ import 'package:custom_date_range_picker/custom_date_range_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:tickets/pages/Tickets/CustomeAwesomeDialogTickets.dart';
 import 'package:tickets/pages/Tickets/satisfactionTickets.dart';
 import 'package:tickets/pages/Tickets/ticketEditScreen.dart';
@@ -822,16 +823,30 @@ class _TicketsLevantados extends State<TicketsLevantados> {
                             const SizedBox(
                               height: 10,
                             ),
-                            Padding(
-                              padding: const EdgeInsets.all(2.0),
-                              child: ProgressBar(
-                                progreso: progreso,
-                                onTap: (status) {
-                                  print('Status tapped: $status');
-                                },
+                            if(tickets.Estatus == "Resuelto")...[
+                              Container(
                                 width: 212,
-                              ),
+
+                                child: Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                child: buttonsConfirm(tickets) // Botón de cerrar
+
                             ),
+                              )
+
+                         ] else...[
+                              Padding(
+                                padding: const EdgeInsets.all(2.0),
+                                child: ProgressBar(
+                                  progreso: progreso,
+                                  onTap: (status) {
+                                    print('Status tapped: $status');
+                                  },
+                                  width: 212,
+                                ),
+                              ),
+                            ],
+
                           ] else ...[
                             Column(
                               children: [
