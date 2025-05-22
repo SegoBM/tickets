@@ -75,6 +75,7 @@ class _ticketRegistrationScreenState extends State<ticketRegistrationScreen> wit
   @override
   void initState() {
     getAreas();
+
     player = AudioPlayer();
     player.setReleaseMode(ReleaseMode.stop);
     super.initState();
@@ -195,10 +196,7 @@ class _ticketRegistrationScreenState extends State<ticketRegistrationScreen> wit
               },
               Gkey: globalKey,
               child: Scaffold(backgroundColor: ColorPalette.ticketsColor4,
-                appBar: size.width > 600 ? appBarWidget() : MyCustomAppBarMobile(
-                  confirm: true, tickets: true,
-                  backgroundColor: ColorPalette.ticketsColor, color: Colors.white,
-                  title: "Alta de ticket", context: context, backButton: true,),
+                appBar: size.width > 600 ? appBarWidget() : null,
                 floatingActionButton: size.width < 600 ? buttonSave() : null,
                 body: size.width > 600 ? _landscapeBody2() : _portraitBody(),
               )),

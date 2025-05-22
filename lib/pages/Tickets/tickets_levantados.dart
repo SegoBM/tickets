@@ -260,6 +260,33 @@ class _TicketsLevantados extends State<TicketsLevantados> {
           color: Colors.white,
         ),
       ),
+      const SizedBox(
+        width: 10,
+      ),
+      FloatingActionButton(
+        onPressed: () async {
+          HapticFeedback.vibrate();
+          LoadingDialogTickets.showLoadingDialogTickets(context, Texts.loadingData);
+
+          AreaController areaController = AreaController();
+          List<AreaModels> listArea = await areaController.getAreasConUsuario();
+
+          LoadingDialogTickets.hideLoadingDialogTickets(context);
+
+          await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => ticketRegistrationScreen(areas: listArea),
+            ),
+          );
+        },
+        tooltip: 'Abrir registro de tickets',
+        backgroundColor: ColorPalette.ticketsColor,
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+        ),
+      ),
+
     ];
   }
 
@@ -448,6 +475,10 @@ class _TicketsLevantados extends State<TicketsLevantados> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       _filtros()[0],
+                      const SizedBox(
+                        width: 5,
+                      ),
+                      _filtros()[8],
                       const SizedBox(
                         width: 5,
                       ),

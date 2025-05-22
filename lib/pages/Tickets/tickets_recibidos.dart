@@ -10,6 +10,7 @@ import 'package:custom_date_range_picker/custom_date_range_picker.dart';
 import 'package:tickets/controllers/TicketController/AttentionController.dart';
 import 'package:tickets/models/TicketsModels/Comentario.dart';
 import 'package:tickets/pages/Tickets/ticketResumeScreen.dart';
+import 'package:tickets/pages/Tickets/ticket_registration_screen.dart';
 import 'package:tickets/pages/Tickets/tickets_conversation.dart';
 import 'package:tickets/shared/actions/my_show_dialog.dart';
 import 'package:tickets/shared/utils/color_palette.dart';
@@ -305,6 +306,32 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
           color: Colors.white,
         ),
       ),
+      const SizedBox(
+        width: 10,
+      ),
+      FloatingActionButton(
+        onPressed: () async {
+          HapticFeedback.vibrate();
+          LoadingDialogTickets.showLoadingDialogTickets(context, Texts.loadingData);
+
+          AreaController areaController = AreaController();
+          List<AreaModels> listArea = await areaController.getAreasConUsuario();
+
+          LoadingDialogTickets.hideLoadingDialogTickets(context);
+
+          await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => ticketRegistrationScreen(areas: listArea),
+            ),
+          );
+        },
+        tooltip: 'Abrir registro de tickets',
+        backgroundColor: ColorPalette.ticketsColor,
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+        ),
+      ),
     ];
   }
 
@@ -504,9 +531,7 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
                           width: 5,
                         ),
                         _filtros()[8],
-                        const SizedBox(
-                          width: 5,
-                        ),
+
                       ],
                     ),
                   ),
@@ -1103,10 +1128,10 @@ class _TicketsLevantados extends State<TicketsRecibidos> {
                         Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            // Center(
-                            //     child: customButtonShowConversationMobile(
-                            //         tickets.IDTickets!,
-                            //         height: 25)),
+                             Center(
+                                 child: customButtonShowConversationMobile(
+                                    tickets.IDTickets!,
+                                    height: 25)),
                           ],
                         ),
                       ],

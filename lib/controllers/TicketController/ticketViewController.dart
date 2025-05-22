@@ -20,6 +20,7 @@ class TicketViewController with ChangeNotifier {
     int attempts = 0;
     while (attempts < maxAttempts) {
       print('Intento $attempts');
+
       try {
         String? token = await UserSession().getToken();
         final response = await http.get(url1, headers: {
@@ -27,6 +28,7 @@ class TicketViewController with ChangeNotifier {
           "Access-Control-Allow-Credentials": "true",
           'Content-type': 'application/json',
           'Accept': 'application/json',
+          'Authorization': 'Bearer $token', // Agregar el token aquí
         });
 
         if (response.statusCode == 200) {

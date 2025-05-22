@@ -428,6 +428,7 @@ class _CollapsibleSidebarState extends State<SideBarTickets>
       isCollapsed: _isCollapsed,
       minWidth: widget.minWidth,
       onTap: () {
+        addTicket();
         _isCollapsed = !_isCollapsed;
         var endWidth = _isCollapsed ? widget.minWidth : tempWidth;
         _animateTo(endWidth);

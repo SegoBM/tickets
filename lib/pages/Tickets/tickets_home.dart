@@ -190,6 +190,7 @@ class _TicketHomeScreen extends State<TicketHomeScreen> {
                 },
               ),
             ],
+
           ],
         ),
       ),
